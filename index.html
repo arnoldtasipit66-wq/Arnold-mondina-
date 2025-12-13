@@ -6055,8 +6055,8 @@ async function endGame(winnerTextMessage, finalGameData = null) {
             bonus = REWARD_WIN_BONUS;
             xpBonus = XP_WIN_BONUS;
             
-            // ❌ FIX: Wala dapat trophy sa AI para iwas "Farming"
-            trophiesChange = 0; 
+            // ✅ FIX: Gawing 5 para maka-rank up kahit sa AI
+            trophiesChange = 5; 
             
             reason = "Practice Win!";
             triggerFireworks(); 
