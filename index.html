@@ -4693,97 +4693,196 @@ div#opponent-info.hud-active {
     100% { box-shadow: inset 0 0 100px #FF0000; border-color: #FFD700; }
 }
 
-        /* --- LANDSCAPE MODE FIX (PROFILE) --- */
-@media (max-height: 550px) and (orientation: landscape) {
+/* --- FIXED PROFILE MODAL DESIGN --- */
+
+/* Main Modal Content Wrapper */
+#profile-modal .content {
+    background: rgba(20, 20, 25, 0.95) !important;
+    border: 2px solid #FFD700 !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
+    max-width: 400px !important;
+    width: 90% !important;
+    display: flex !important;
+    flex-direction: column !important; /* Default Portrait: Patayo */
+    align-items: center !important;
+    position: relative !important;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8) !important;
+}
+
+/* Close Button */
+#profile-close-btn {
+    position: absolute !important;
+    top: 10px !important;
+    right: 15px !important;
+    font-size: 2em !important;
+    color: white !important;
+    z-index: 50 !important;
+    cursor: pointer;
+}
+
+/* Avatar Styling */
+.avatar-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 10px auto;
+}
+
+#profile-avatar-img, #profile-avatar-default {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    object-fit: cover;
+}
+
+#profile-avatar-default {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4em; background: rgba(255,255,255,0.1);
+}
+
+#profile-upload-btn {
+    position: absolute; bottom: 0; right: 0;
+    width: 30px; height: 30px;
+    background: #00E5FF; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid white; cursor: pointer; z-index: 10;
+}
+
+/* Text Styling */
+#profile-name-display {
+    font-size: 1.8em !important;
+    color: white !important;
+    margin: 5px 0 !important;
+    text-shadow: 2px 2px 0 #000;
+    font-family: 'Luckiest Guy', cursive;
+}
+
+#profile-rank-text-small {
+    color: #FFD700; font-weight: bold; margin-bottom: 10px; font-size: 0.9em;
+    display: none; /* Tago muna, sa trophy natin papakita */
+}
+
+/* TROPHY SHOWCASE (Gitna) */
+.trophy-showcase {
+    background: rgba(255, 215, 0, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 15px;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+#profile-trophy-icon {
+    font-size: 4.5em !important;
+    filter: drop-shadow(0 0 15px gold);
+    animation: floatTrophy 3s ease-in-out infinite;
+    line-height: 1;
+}
+
+#profile-rank-name {
+    font-family: 'Luckiest Guy', cursive;
+    font-size: 1.5em;
+    color: #FFD700;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 #000;
+}
+
+/* STATS GRID */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.stat-box {
+    background: rgba(255,255,255,0.1);
+    padding: 8px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-label { font-size: 0.7em; color: #aaa; text-transform: uppercase; display: block; }
+.stat-val { font-size: 1.3em; font-weight: 800; font-family: 'Nunito', sans-serif; }
+.win-color { color: #33FF57; }
+.lvl-color { color: #00E5FF; }
+
+/* CUE PREVIEW */
+.cue-preview-box {
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+#profile-cue-preview {
+    width: 100%; height: 40px;
+    background-size: contain; background-position: center; background-repeat: no-repeat;
+    margin-top: 5px;
+    filter: drop-shadow(0 2px 5px black);
+}
+
+.cue-name-text { color: #FFD700; font-weight: bold; font-size: 0.9em; }
+
+@keyframes floatTrophy {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* ========================================= */
+/* 🔥 LANDSCAPE MODE FIX (THE MAGIC PART) 🔥 */
+/* ========================================= */
+@media (max-height: 500px) {
     
-    /* 1. Gawing Grid ang Layout (Hatiin sa Kaliwa at Kanan) */
     #profile-modal .content {
-        display: grid !important;
-        /* Column 1: 140px (Para sa Mukha), Column 2: The Rest (Para sa Trophy) */
-        grid-template-columns: 140px 1fr !important;
-        grid-template-rows: auto auto 1fr !important;
-        
-        width: 95vw !important;
-        height: 92vh !important; /* Sagad sa taas */
-        max-height: none !important;
-        padding: 10px 20px !important;
-        gap: 10px !important;
-        
-        align-content: center !important;
-        overflow-y: auto !important; /* Scrollable kung sumobra */
+        flex-direction: row !important; /* Gawing Magkatabi */
+        width: 90vw !important;
+        height: 90vh !important;
+        max-width: 600px !important;
+        padding: 15px !important;
+        gap: 20px;
     }
 
-    /* 2. Kaliwang Side: Avatar */
-    #profile-modal .content > div:nth-of-type(1) {
-        grid-column: 1 !important;
-        grid-row: 1 / span 2 !important; /* Sakop ang taas */
-        margin: 0 auto !important;
-        transform: scale(0.85); /* Paliitin konti ang mukha */
+    /* KALIWA: Avatar & Name */
+    .profile-left-col {
+        width: 40%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-right: 1px solid rgba(255,255,255,0.1);
+        padding-right: 10px;
     }
 
-    /* 3. Kaliwang Side: Name (Sa ilalim ng mukha) */
-    #profile-name-display {
-        grid-column: 1 !important;
-        grid-row: 3 !important;
-        font-size: 1.1em !important;
-        align-self: start !important;
+    /* KANAN: Trophy & Stats */
+    .profile-right-col {
+        width: 60%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
     }
 
-    /* Itago ang divider line */
-    #profile-modal hr { display: none !important; }
-
-    /* 4. Kanang Side: Trophy (Pinaka-highlight) */
-    .trophy-showcase {
-        grid-column: 2 !important;
-        grid-row: 1 / span 2 !important;
-        margin-bottom: 0 !important;
-        
-        /* Igitna ang laman */
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-    }
-
-    /* Paliitin konti ang Trophy Icon para di masyadong malaki */
-    #profile-trophy-icon {
-        font-size: 3.5em !important; 
-        margin-bottom: 5px !important;
-    }
-
-    #profile-rank-name {
-        font-size: 1.5em !important;
-    }
-
-    /* 5. Kanang Side: Stats Box (Sa ilalim ng Trophy) */
-    #profile-modal .content > div:nth-last-of-type(2) {
-        grid-column: 2 !important;
-        grid-row: 3 !important;
-        padding: 5px !important;
-        margin-bottom: 0 !important;
-    }
-
-    /* 6. Footer: Equipped Cue (Sakop ang buong baba) */
-    #profile-modal .content > div:last-of-type {
-        grid-column: 1 / span 2 !important;
-        grid-row: 4 !important;
-        margin-top: 5px !important;
-        padding: 5px !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-    }
+    /* Adjust sizes for Landscape */
+    .avatar-container { width: 80px; height: 80px; }
+    #profile-name-display { font-size: 1.3em !important; }
     
-    /* Ayusin ang laki ng Cue Preview sa landscape */
-    #profile-cue-preview {
-        height: 30px !important;
-        width: 150px !important;
+    .trophy-showcase { 
+        padding: 5px; 
+        margin-bottom: 5px; 
+        background: transparent; /* Remove box bg in landscape to save space */
+        border: none;
     }
-
-    /* Ayusin ang Close Button */
-    #profile-close-btn {
-        top: 5px !important;
-        right: 10px !important;
-    }
+    #profile-trophy-icon { font-size: 3em !important; }
+    #profile-rank-name { font-size: 1.2em; }
+    
+    .stats-grid { margin-bottom: 5px; }
+    .stat-box { padding: 5px; }
+    .stat-val { font-size: 1.1em; }
 }
         
 </style>
@@ -5141,40 +5240,58 @@ div#opponent-info.hud-active {
 </div>
 
 <div id="profile-modal" class="modal-overlay">
-    <div class="content" style="width: 85%; max-width: 350px; text-align: center;">
+    <div class="content">
+        
         <span class="modal-close-btn" id="profile-close-btn">&times;</span>
         
-        <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 10px auto;">
-            <img id="profile-avatar-img" class="viewable-img" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #FFD700; display: none; cursor: pointer;">
+        <div class="profile-left-col">
+            <div class="avatar-container">
+                <img id="profile-avatar-img" class="viewable-img" src="" style="display: none;">
+                <div id="profile-avatar-default">👤</div>
+                <div id="profile-upload-btn">📷</div>
+            </div>
             
-            <div id="profile-avatar-default" style="width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 4em; background: rgba(255,255,255,0.1); border: 3px solid #FFD700;">
-                👤
+            <input type="file" id="profile-file-input" accept="image/*" style="display: none;">
+            
+            <h2 id="profile-name-display">Player Name</h2>
+            <div id="profile-rank-text-small">[Rank]</div> </div>
+
+        <div class="profile-right-col">
+            
+            <div class="trophy-showcase">
+    <div id="profile-trophy-icon">🏆</div>
+    <div id="profile-rank-name">RANK NAME</div>
+
+    <div class="rank-progress-wrapper" style="width: 80%; margin: 10px auto;">
+        
+        <div style="background: rgba(0,0,0,0.5); height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+            <div id="profile-rank-fill" style="width: 0%; height: 100%; background: linear-gradient(to right, #00b09b, #96c93d); transition: width 0.5s ease;"></div>
+        </div>
+        
+        <div id="profile-rank-next-text" style="font-size: 0.75em; color: #ccc; margin-top: 5px; font-weight: bold;">
+            Loading...
+        </div>
+    </div>
+    </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-label">WINS</span>
+                    <span id="profile-wins-display" class="stat-val win-color">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">LEVEL</span>
+                    <span id="profile-level-display" class="stat-val lvl-color">1</span>
+                </div>
             </div>
 
-            <div id="profile-upload-btn" style="position: absolute; bottom: 0; right: 0; background: #00E5FF; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
-                📷
+            <div class="cue-preview-box">
+                <span class="stat-label">Equipped:</span>
+                <span id="profile-cue-name" class="cue-name-text">Default</span>
+                <div id="profile-cue-preview"></div>
             </div>
         </div>
 
-        <input type="file" id="profile-file-input" accept="image/*" style="display: none;">
-
-        <h2 id="profile-name-display" style="margin-bottom: 5px; font-size: 1.8em;">Player Name</h2>
-        <div id="profile-rank-badge" style="color: #FFD700; font-weight: bold; margin-bottom: 20px;">[RANK]</div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-            <div>
-                <div style="font-size: 0.8em; opacity: 0.7;">WINS</div>
-                <div id="profile-wins-display" style="font-size: 1.2em; font-weight: bold; color: #33FF57;">0</div>
-            </div>
-            <div>
-                <div style="font-size: 0.8em; opacity: 0.7;">LEVEL</div>
-                <div id="profile-level-display" style="font-size: 1.2em; font-weight: bold; color: #00E5FF;">1</div>
-            </div>
-        </div>
-
-        <p style="margin-bottom: 5px; opacity: 0.8;">Equipped Cue:</p>
-        <div id="profile-cue-preview" style="width: 100%; height: 60px; background-size: contain; background-position: center; background-repeat: no-repeat; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));"></div>
-        <div id="profile-cue-name" style="font-size: 0.9em; color: #FFD700; margin-top: 5px;">Default</div>
     </div>
 </div>
 
@@ -12934,14 +13051,21 @@ async function showProfile(target) {
     gameState = 'modal_open'; 
     
     const modal = document.getElementById('profile-modal');
+    
+    // Elements
     const nameEl = document.getElementById('profile-name-display');
-    const rankEl = document.getElementById('profile-rank-badge');
     const winsEl = document.getElementById('profile-wins-display');
     const levelEl = document.getElementById('profile-level-display');
     const cueImgEl = document.getElementById('profile-cue-preview');
     const cueNameEl = document.getElementById('profile-cue-name');
     
-    // IMAGE ELEMENTS
+    const trophyIconEl = document.getElementById('profile-trophy-icon');
+    const rankNameEl = document.getElementById('profile-rank-name');
+    
+    // PROGRESS BAR ELEMENTS (Bago)
+    const rankFillEl = document.getElementById('profile-rank-fill');
+    const rankNextTextEl = document.getElementById('profile-rank-next-text');
+    
     const avatarImg = document.getElementById('profile-avatar-img');
     const defaultAvatar = document.getElementById('profile-avatar-default');
     const uploadBtn = document.getElementById('profile-upload-btn');
@@ -12949,15 +13073,46 @@ async function showProfile(target) {
     let playerData = {};
 
     if (target === 'player') {
-        // --- SARILI MONG PROFILE ---
-        const rankInfo = getPlayerRank(playerTrophies);
+        // --- MY PROFILE ---
+        const safeTrophies = (typeof playerTrophies !== 'undefined') ? playerTrophies : 0;
+        const rankInfo = getPlayerRank(safeTrophies);
         
-        // IPALITAW ANG UPLOAD BUTTON (CAMERA ICON)
-        if(uploadBtn) {
-            uploadBtn.style.display = 'flex';
-            // Siguraduhing nasa ibabaw ang camera button
-            uploadBtn.style.zIndex = '200'; 
+        // --- LOGIC PARA SA NEXT RANK (MATH) ---
+        const currentIndex = rankInfo.index;
+        let progressPercent = 100;
+        let progressText = "Max Rank Reached!";
+
+        // Check kung hindi pa Max Rank (Mythical)
+        if (currentIndex < RANKS.length - 1) {
+            const nextRank = RANKS[currentIndex + 1];
+            const currentRankMin = RANKS[currentIndex].minTrophies;
+            const nextRankMin = nextRank.minTrophies;
+
+            // Kwentahin ang percentage
+            // (Current - Base) / (Target - Base)
+            const numerator = safeTrophies - currentRankMin;
+            const denominator = nextRankMin - currentRankMin;
+            
+            // Iwas divide by zero
+            if (denominator > 0) {
+                progressPercent = (numerator / denominator) * 100;
+            } else {
+                progressPercent = 0;
+            }
+            
+            // Limit sa 100%
+            progressPercent = Math.max(0, Math.min(100, progressPercent));
+
+            const needed = nextRankMin - safeTrophies;
+            progressText = `${safeTrophies} / ${nextRankMin} (${needed} to ${nextRank.name})`;
         }
+
+        // I-set ang UI
+        if (rankFillEl) rankFillEl.style.width = `${progressPercent}%`;
+        if (rankNextTextEl) rankNextTextEl.textContent = progressText;
+
+        // Ipakita ang Upload Button
+        if(uploadBtn) uploadBtn.style.display = 'flex';
 
         let myPhoto = localStorage.getItem('pinoyPoolPlayerPhoto');
 
@@ -12966,12 +13121,13 @@ async function showProfile(target) {
             photo: myPhoto, 
             rankName: rankInfo.name,
             rankColor: rankInfo.color,
+            rankIcon: rankInfo.icon,
             wins: "My Stats", 
             level: playerLevel,
             cueId: equippedItems.cue
         };
 
-        // Fetch real data from DB
+        // Fetch wins from DB
         if (localPlayerUid && db) {
              getDoc(doc(db, "players", localPlayerUid)).then(snap => {
                  if(snap.exists()) {
@@ -12981,7 +13137,6 @@ async function showProfile(target) {
                          if(avatarImg) {
                              avatarImg.src = data.photo;
                              avatarImg.style.display = 'block';
-                             // Dito natin ilalagay ang Zoom sa loob ng Profile Modal
                              avatarImg.onclick = () => window.viewFullPhoto(data.photo);
                          }
                          if(defaultAvatar) defaultAvatar.style.display = 'none';
@@ -12992,8 +13147,12 @@ async function showProfile(target) {
         }
 
     } else {
-        // --- PROFILE NG KALABAN ---
-        if(uploadBtn) uploadBtn.style.display = 'none'; // Tago upload button
+        // --- OPPONENT PROFILE ---
+        if(uploadBtn) uploadBtn.style.display = 'none'; 
+        
+        // Hide progress bar pag kalaban ang tinitignan (kasi secret yun hehe)
+        if(rankFillEl) rankFillEl.parentElement.style.display = 'none';
+        if(rankNextTextEl) rankNextTextEl.style.display = 'none';
 
         if (!isOnlineGame) {
             // AI
@@ -13003,18 +13162,20 @@ async function showProfile(target) {
                 photo: null,
                 rankName: "Computer",
                 rankColor: "#aaa",
+                rankIcon: "🤖",
                 wins: "∞",
                 level: 99,
                 cueId: 'default'
             };
         } else {
-            // ONLINE OPPONENT
+            // ONLINE
             const oppRankInfo = RANKS[opponentRankIndex] || RANKS[0];
             playerData = {
                 name: opponentPlayerName,
                 photo: window.opponentPhotoUrl || null, 
                 rankName: oppRankInfo.name,
                 rankColor: oppRankInfo.color,
+                rankIcon: oppRankInfo.icon,
                 wins: "?", 
                 level: "?",
                 cueId: opponentEquippedCueId || 'default'
@@ -13022,21 +13183,26 @@ async function showProfile(target) {
         }
     }
 
-    // --- RENDER TEXT ---
+    // --- RENDER ---
     if(nameEl) nameEl.textContent = playerData.name;
-    if(rankEl) {
-        rankEl.textContent = `[${playerData.rankName}]`;
-        rankEl.style.color = playerData.rankColor;
+    
+    if(trophyIconEl) {
+        trophyIconEl.textContent = playerData.rankIcon;
+        trophyIconEl.style.filter = `drop-shadow(0 0 15px ${playerData.rankColor})`;
     }
-    if(winsEl) winsEl.textContent = playerData.wins;
+    
+    if(rankNameEl) {
+        rankNameEl.textContent = playerData.rankName;
+        rankNameEl.style.color = playerData.rankColor;
+    }
+
+    if(winsEl && target !== 'player') winsEl.textContent = playerData.wins;
     if(levelEl) levelEl.textContent = playerData.level;
 
-    // --- RENDER PHOTO ---
     if (playerData.photo) {
         if(avatarImg) {
             avatarImg.src = playerData.photo;
             avatarImg.style.display = 'block';
-            // Enable Zoom pag pinindot ang picture mismo
             avatarImg.onclick = () => window.viewFullPhoto(playerData.photo);
         }
         if(defaultAvatar) defaultAvatar.style.display = 'none';
@@ -13048,10 +13214,15 @@ async function showProfile(target) {
         }
     }
 
-    // --- RENDER CUE ---
     const cueItem = SHOP_ITEMS.cues.find(c => c.id === playerData.cueId) || SHOP_ITEMS.cues[0];
     if(cueImgEl) cueImgEl.style.backgroundImage = `url('${cueItem.imageSrc}')`;
     if(cueNameEl) cueNameEl.textContent = cueItem.name;
+
+    // Ibalik ang visibility ng bar kung PLAYER ang tinitignan
+    if (target === 'player') {
+        if(rankFillEl) rankFillEl.parentElement.style.display = 'block';
+        if(rankNextTextEl) rankNextTextEl.style.display = 'block';
+    }
 
     modal.classList.add('show');
     history.pushState({ modal: 'profileModal' }, 'Profile', '#profile');
