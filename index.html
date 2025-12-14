@@ -14311,6 +14311,124 @@ function showRankUpScreen(newRankIndex) {
 }
 
 
+/* ========================================= */
+/* 🎡 SPIN WHEEL LOGIC (IDINAGDAG)        🎡 */
+/* ========================================= */
+
+const spinCanvas = document.getElementById('spin-wheel-canvas');
+const spinCtx = spinCanvas ? spinCanvas.getContext('2d') : null;
+const spinBtn = document.getElementById('spin-btn');
+const spinStatus = document.getElementById('spin-status-text');
+
+// Mga Premyo
+const SEGMENTS = [
+    { text: "100",  color: "#FF5733", value: 100 },
+    { text: "500",  color: "#33FF57", value: 500 },
+    { text: "250",  color: "#3357FF", value: 250 },
+    { text: "1000", color: "#FFD700", value: 1000 }, 
+    { text: "50",   color: "#FF33A1", value: 50 },
+    { text: "2000", color: "#00E5FF", value: 2000 }, 
+    { text: "150",  color: "#A133FF", value: 150 },
+    { text: "750",  color: "#FF8C00", value: 750 }
+];
+
+let wheelAngle = 0;       
+let wheelVelocity = 0;    
+let isSpinning = false;
+
+function drawWheel() {
+    if (!spinCtx) return;
+    const centerX = spinCanvas.width / 2;
+    const centerY = spinCanvas.height / 2;
+    const radius = spinCanvas.width / 2 - 10; 
+    const arcSize = (2 * Math.PI) / SEGMENTS.length;
+
+    spinCtx.clearRect(0, 0, spinCanvas.width, spinCanvas.height);
+
+    spinCtx.save();
+    spinCtx.translate(centerX, centerY);
+    spinCtx.rotate(wheelAngle);
+
+    SEGMENTS.forEach((seg, i) => {
+        const angle = i * arcSize;
+        spinCtx.beginPath();
+        spinCtx.moveTo(0, 0);
+        spinCtx.arc(0, 0, radius, angle, angle + arcSize);
+        spinCtx.fillStyle = seg.color;
+        spinCtx.fill();
+        spinCtx.stroke(); 
+
+        spinCtx.save();
+        spinCtx.rotate(angle + arcSize / 2);
+        spinCtx.textAlign = "right";
+        spinCtx.fillStyle = "#fff";
+        spinCtx.font = "bold 18px Arial";
+        spinCtx.shadowColor = "black";
+        spinCtx.shadowBlur = 4;
+        spinCtx.fillText(seg.text, radius - 20, 5); 
+        spinCtx.restore();
+    });
+    spinCtx.restore();
+}
+
+function startSpin() {
+    if (isSpinning) return;
+    if (!isDailyRewardAvailable()) {
+        showMessage("Wait for cooldown!", 2000);
+        return;
+    }
+
+    playButtonSound();
+    isSpinning = true;
+    spinBtn.disabled = true;
+    spinBtn.style.opacity = "0.5";
+    spinStatus.textContent = "Spinning...";
+
+    wheelVelocity = 0.3 + Math.random() * 0.3; 
+    animateSpin();
+}
+
+function animateSpin() {
+    wheelVelocity *= 0.985; 
+    wheelAngle += wheelVelocity;
+    drawWheel();
+
+    if (wheelVelocity < 0.002) {
+        finishSpin();
+    } else {
+        requestAnimationFrame(animateSpin);
+    }
+}
+
+function finishSpin() {
+    isSpinning = false;
+    wheelVelocity = 0;
+    
+    const arcSize = (2 * Math.PI) / SEGMENTS.length;
+    const currentRotation = wheelAngle % (2 * Math.PI);
+    let index = Math.floor(((2 * Math.PI) - currentRotation + (Math.PI / 2)) % (2 * Math.PI) / arcSize) % SEGMENTS.length;
+    
+    const winningSegment = SEGMENTS[index];
+    const prize = winningSegment.value;
+
+    spinStatus.innerHTML = `YOU WON: <span style="color:${winningSegment.color}; font-size:1.5em;">${prize}</span> COINS!`;
+    
+    playerTotalCurrency += prize;
+    saveCurrency();
+    updateCurrencyDisplay();
+    saveLastClaimTime();
+    updateDailyRewardButtonState();
+
+    if(typeof playCoinSound === 'function') playCoinSound();
+    triggerFireworks(); 
+
+    spinBtn.textContent = "CLAIMED";
+}
+
+// Initial Draw
+setTimeout(drawWheel, 1000);
+
+if (spinBtn) spinBtn.addEventListener('click', startSpin);
 
     
 </script> <div id="full-image-modal" class="modal-overlay">
@@ -14431,124 +14549,6 @@ function showRankUpScreen(newRankIndex) {
         }
     }
 
-/* ========================================= */
-/* 🎡 SPIN WHEEL LOGIC (IDINAGDAG)        🎡 */
-/* ========================================= */
-
-const spinCanvas = document.getElementById('spin-wheel-canvas');
-const spinCtx = spinCanvas ? spinCanvas.getContext('2d') : null;
-const spinBtn = document.getElementById('spin-btn');
-const spinStatus = document.getElementById('spin-status-text');
-
-// Mga Premyo
-const SEGMENTS = [
-    { text: "100",  color: "#FF5733", value: 100 },
-    { text: "500",  color: "#33FF57", value: 500 },
-    { text: "250",  color: "#3357FF", value: 250 },
-    { text: "1000", color: "#FFD700", value: 1000 }, 
-    { text: "50",   color: "#FF33A1", value: 50 },
-    { text: "2000", color: "#00E5FF", value: 2000 }, 
-    { text: "150",  color: "#A133FF", value: 150 },
-    { text: "750",  color: "#FF8C00", value: 750 }
-];
-
-let wheelAngle = 0;       
-let wheelVelocity = 0;    
-let isSpinning = false;
-
-function drawWheel() {
-    if (!spinCtx) return;
-    const centerX = spinCanvas.width / 2;
-    const centerY = spinCanvas.height / 2;
-    const radius = spinCanvas.width / 2 - 10; 
-    const arcSize = (2 * Math.PI) / SEGMENTS.length;
-
-    spinCtx.clearRect(0, 0, spinCanvas.width, spinCanvas.height);
-
-    spinCtx.save();
-    spinCtx.translate(centerX, centerY);
-    spinCtx.rotate(wheelAngle);
-
-    SEGMENTS.forEach((seg, i) => {
-        const angle = i * arcSize;
-        spinCtx.beginPath();
-        spinCtx.moveTo(0, 0);
-        spinCtx.arc(0, 0, radius, angle, angle + arcSize);
-        spinCtx.fillStyle = seg.color;
-        spinCtx.fill();
-        spinCtx.stroke(); 
-
-        spinCtx.save();
-        spinCtx.rotate(angle + arcSize / 2);
-        spinCtx.textAlign = "right";
-        spinCtx.fillStyle = "#fff";
-        spinCtx.font = "bold 18px Arial";
-        spinCtx.shadowColor = "black";
-        spinCtx.shadowBlur = 4;
-        spinCtx.fillText(seg.text, radius - 20, 5); 
-        spinCtx.restore();
-    });
-    spinCtx.restore();
-}
-
-function startSpin() {
-    if (isSpinning) return;
-    if (!isDailyRewardAvailable()) {
-        showMessage("Wait for cooldown!", 2000);
-        return;
-    }
-
-    playButtonSound();
-    isSpinning = true;
-    spinBtn.disabled = true;
-    spinBtn.style.opacity = "0.5";
-    spinStatus.textContent = "Spinning...";
-
-    wheelVelocity = 0.3 + Math.random() * 0.3; 
-    animateSpin();
-}
-
-function animateSpin() {
-    wheelVelocity *= 0.985; 
-    wheelAngle += wheelVelocity;
-    drawWheel();
-
-    if (wheelVelocity < 0.002) {
-        finishSpin();
-    } else {
-        requestAnimationFrame(animateSpin);
-    }
-}
-
-function finishSpin() {
-    isSpinning = false;
-    wheelVelocity = 0;
-    
-    const arcSize = (2 * Math.PI) / SEGMENTS.length;
-    const currentRotation = wheelAngle % (2 * Math.PI);
-    let index = Math.floor(((2 * Math.PI) - currentRotation + (Math.PI / 2)) % (2 * Math.PI) / arcSize) % SEGMENTS.length;
-    
-    const winningSegment = SEGMENTS[index];
-    const prize = winningSegment.value;
-
-    spinStatus.innerHTML = `YOU WON: <span style="color:${winningSegment.color}; font-size:1.5em;">${prize}</span> COINS!`;
-    
-    playerTotalCurrency += prize;
-    saveCurrency();
-    updateCurrencyDisplay();
-    saveLastClaimTime();
-    updateDailyRewardButtonState();
-
-    if(typeof playCoinSound === 'function') playCoinSound();
-    triggerFireworks(); 
-
-    spinBtn.textContent = "CLAIMED";
-}
-
-// Initial Draw
-setTimeout(drawWheel, 1000);
-
-if (spinBtn) spinBtn.addEventListener('click', startSpin);
 </script>
 
 </body>
