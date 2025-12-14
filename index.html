@@ -6937,6 +6937,7 @@ function playCoinSound() {
         }
 
         async function playAimingSound() {
+             return;
              if (!audioInitialized || !aimingSynth) return;
              const now = Tone.now();
              if (now < lastAimSoundTime + (AIM_SOUND_INTERVAL / 1000)) return; // Throttle the sound
