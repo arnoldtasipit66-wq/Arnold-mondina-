@@ -5399,6 +5399,56 @@ div#opponent-info.hud-active {
     <button class="menu-button" id="invite-61-button">61 BALL</button>
 </div>
 
+<div id="daily-reward-modal" class="modal-overlay">
+    <div class="content" style="width: 90%; max-width: 450px; text-align: center; position: relative; overflow: visible; background: radial-gradient(circle, #2b32b2 0%, #141e30 100%); border: 2px solid #FFD700; box-shadow: 0 0 30px #FFD700;">
+        
+        <span class="modal-close-btn" id="daily-reward-close-btn" style="top: 10px; right: 15px; z-index: 100;">&times;</span>
+        
+        <h2 style="color: #FFD700; text-shadow: 0 0 10px #FFD700; margin-bottom: 10px; font-family: 'Luckiest Guy', cursive; font-size: 2.5em;">LUCKY SPIN 🎡</h2>
+        
+        <div style="position: relative; width: 300px; height: 300px; margin: 0 auto;">
+            
+            <canvas id="spin-wheel-canvas" width="300" height="300"></canvas>
+            
+            <div style="
+                position: absolute; 
+                top: -15px; 
+                left: 50%; 
+                transform: translateX(-50%); 
+                width: 0; 
+                height: 0; 
+                border-left: 15px solid transparent;
+                border-right: 15px solid transparent;
+                border-top: 25px solid #FF0000; 
+                filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+                z-index: 10;">
+            </div>
+
+            <div style="
+                position: absolute; 
+                top: 50%; left: 50%; 
+                transform: translate(-50%, -50%); 
+                width: 40px; height: 40px; 
+                background: #FFF; 
+                border-radius: 50%; 
+                box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+                display: flex; justify-content: center; align-items: center;
+                font-size: 20px; z-index: 5;">
+                🎱
+            </div>
+        </div>
+
+        <p id="spin-status-text" style="margin-top: 20px; font-size: 1.2em; font-weight: bold; color: white;">
+            Spin to Win Coins!
+        </p>
+
+        <button id="spin-btn" class="menu-button" style="background: linear-gradient(to bottom, #FFD700, #FFA500); color: black; font-size: 1.5em; padding: 10px 50px; margin-top: 10px; border: 2px solid white; box-shadow: 0 0 15px #FFD700;">
+            SPIN!
+        </button>
+
+    </div>
+</div>
+
     
     <audio id="bg-music-reggae-1" src="https://arnoldtasipit66-wq.github.io/my-game-assets/mrbas-music-labs-roots-reggae-285790.mp3" crossorigin="anonymous" loop></audio>
     <audio id="bg-music-reggae-2" src="https://arnoldtasipit66-wq.github.io/my-game-assets/mrbas-music-labs-roots-reggae-285790.mp3" crossorigin="anonymous" loop></audio>
@@ -12814,36 +12864,45 @@ function updateDailyRewardButtonState() {
     }
 }
 
+// --- UPDATED CLAIM FUNCTION (Para sa Spin Wheel) ---
 function claimDailyReward() {
+    // 1. Check kung available pa ang reward
     if (isDailyRewardAvailable()) {
-        playButtonSound(); // Patunugin ang button
-
-        // 1. Idagdag ang reward sa currency
-        playerTotalCurrency += DAILY_REWARD_AMOUNT;
-        saveCurrency(); // I-save agad ang bagong total
-        updateCurrencyDisplay(); // I-update ang display sa UI
-
-        // 2. I-record ang oras ng pag-claim
-        saveLastClaimTime();
-
-        // 3. I-update ang itsura ng button
-        updateDailyRewardButtonState();
-
-        // 4. Ipakita ang confirmation modal
-        const rewardModal = document.getElementById('daily-reward-modal');
-        const rewardText = document.getElementById('reward-amount-text');
-        if (rewardText) {
-             rewardText.textContent = `+ ${DAILY_REWARD_AMOUNT} ${CURRENCY_NAME}!`;
+        playButtonSound();
+        
+        // 2. Hanapin ang Modal
+        const modal = document.getElementById('daily-reward-modal');
+        if (modal) {
+            // 3. Ipakita ang Spin Wheel Modal
+            modal.classList.add('show');
+            
+            // Add history state para gumana ang back button
+            history.pushState({ modal: 'dailyRewardModal' }, 'Spin Wheel', '#spin');
+            
+            // 4. Reset ang Wheel UI (Para mukhang bago ulit)
+            const spinStatus = document.getElementById('spin-status-text');
+            const spinBtn = document.getElementById('spin-btn');
+            
+            if(spinStatus) spinStatus.innerHTML = "Spin to Win Coins!";
+            if(spinBtn) {
+                spinBtn.disabled = false;
+                spinBtn.textContent = "SPIN!";
+                spinBtn.style.opacity = "1";
+            }
+            
+            // 5. I-drawing ulit ang wheel para fresh
+            if(typeof drawWheel === 'function') {
+                drawWheel();
+            }
         }
-        if (rewardModal) {
-            rewardModal.classList.add('show');
-            // Hindi na natin kailangan i-push state dito kung gusto nating simpleng modal lang
-            // history.pushState({ modal: 'dailyRewardModal' }, 'Reward Claimed', '#reward');
-        }
-
     } else {
-        // Magpakita ng message kung hindi pa pwede
-        showMessage("Reward not available yet. Come back later!", 2000);
+        // KUNG HINDI PA PWEDE (Cooldown)
+        // Kalkulahin ang natitirang oras
+        const remainingMs = (lastRewardClaimTime + DAILY_REWARD_COOLDOWN) - Date.now();
+        const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+        
+        showMessage(`Reward available in ${hours}h ${minutes}m`, 3000);
     }
 }
 
@@ -14203,6 +14262,125 @@ function showRankUpScreen(newRankIndex) {
             });
         }
     }
+
+/* ========================================= */
+/* 🎡 SPIN WHEEL LOGIC (IDINAGDAG)        🎡 */
+/* ========================================= */
+
+const spinCanvas = document.getElementById('spin-wheel-canvas');
+const spinCtx = spinCanvas ? spinCanvas.getContext('2d') : null;
+const spinBtn = document.getElementById('spin-btn');
+const spinStatus = document.getElementById('spin-status-text');
+
+// Mga Premyo
+const SEGMENTS = [
+    { text: "100",  color: "#FF5733", value: 100 },
+    { text: "500",  color: "#33FF57", value: 500 },
+    { text: "250",  color: "#3357FF", value: 250 },
+    { text: "1000", color: "#FFD700", value: 1000 }, 
+    { text: "50",   color: "#FF33A1", value: 50 },
+    { text: "2000", color: "#00E5FF", value: 2000 }, 
+    { text: "150",  color: "#A133FF", value: 150 },
+    { text: "750",  color: "#FF8C00", value: 750 }
+];
+
+let wheelAngle = 0;       
+let wheelVelocity = 0;    
+let isSpinning = false;
+
+function drawWheel() {
+    if (!spinCtx) return;
+    const centerX = spinCanvas.width / 2;
+    const centerY = spinCanvas.height / 2;
+    const radius = spinCanvas.width / 2 - 10; 
+    const arcSize = (2 * Math.PI) / SEGMENTS.length;
+
+    spinCtx.clearRect(0, 0, spinCanvas.width, spinCanvas.height);
+
+    spinCtx.save();
+    spinCtx.translate(centerX, centerY);
+    spinCtx.rotate(wheelAngle);
+
+    SEGMENTS.forEach((seg, i) => {
+        const angle = i * arcSize;
+        spinCtx.beginPath();
+        spinCtx.moveTo(0, 0);
+        spinCtx.arc(0, 0, radius, angle, angle + arcSize);
+        spinCtx.fillStyle = seg.color;
+        spinCtx.fill();
+        spinCtx.stroke(); 
+
+        spinCtx.save();
+        spinCtx.rotate(angle + arcSize / 2);
+        spinCtx.textAlign = "right";
+        spinCtx.fillStyle = "#fff";
+        spinCtx.font = "bold 18px Arial";
+        spinCtx.shadowColor = "black";
+        spinCtx.shadowBlur = 4;
+        spinCtx.fillText(seg.text, radius - 20, 5); 
+        spinCtx.restore();
+    });
+    spinCtx.restore();
+}
+
+function startSpin() {
+    if (isSpinning) return;
+    if (!isDailyRewardAvailable()) {
+        showMessage("Wait for cooldown!", 2000);
+        return;
+    }
+
+    playButtonSound();
+    isSpinning = true;
+    spinBtn.disabled = true;
+    spinBtn.style.opacity = "0.5";
+    spinStatus.textContent = "Spinning...";
+
+    wheelVelocity = 0.3 + Math.random() * 0.3; 
+    animateSpin();
+}
+
+function animateSpin() {
+    wheelVelocity *= 0.985; 
+    wheelAngle += wheelVelocity;
+    drawWheel();
+
+    if (wheelVelocity < 0.002) {
+        finishSpin();
+    } else {
+        requestAnimationFrame(animateSpin);
+    }
+}
+
+function finishSpin() {
+    isSpinning = false;
+    wheelVelocity = 0;
+    
+    const arcSize = (2 * Math.PI) / SEGMENTS.length;
+    const currentRotation = wheelAngle % (2 * Math.PI);
+    let index = Math.floor(((2 * Math.PI) - currentRotation + (Math.PI / 2)) % (2 * Math.PI) / arcSize) % SEGMENTS.length;
+    
+    const winningSegment = SEGMENTS[index];
+    const prize = winningSegment.value;
+
+    spinStatus.innerHTML = `YOU WON: <span style="color:${winningSegment.color}; font-size:1.5em;">${prize}</span> COINS!`;
+    
+    playerTotalCurrency += prize;
+    saveCurrency();
+    updateCurrencyDisplay();
+    saveLastClaimTime();
+    updateDailyRewardButtonState();
+
+    if(typeof playCoinSound === 'function') playCoinSound();
+    triggerFireworks(); 
+
+    spinBtn.textContent = "CLAIMED";
+}
+
+// Initial Draw
+setTimeout(drawWheel, 1000);
+
+if (spinBtn) spinBtn.addEventListener('click', startSpin);
 </script>
 
 </body>
