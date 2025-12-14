@@ -6712,10 +6712,9 @@ document.getElementById('invite-game-select-close-btn').addEventListener('click'
         'waiting-room-close-btn',
         'leaderboard-close-btn',
         'shop-close-btn',
-        'friends-modal-close-btn', // Siguraduhing may comma (kwit) dito
-        'profile-close-btn'        // <--- ▼▼▼ IDAGDAG MO ITO ▼▼▼
-    ]; 
-
+        'friends-modal-close-btn' 
+        // WALA NA DITO YUNG PROFILE!
+    ];
 
     backButtonIds.forEach(id => {
         const btn = document.getElementById(id);
@@ -14080,56 +14079,79 @@ function showRankUpScreen(newRankIndex) {
 
 // --- FINAL & SAFE GLOBAL IMAGE VIEWER ---
 
-// 1. I-define ang Global Function (Para matawag ng Friends at Leaderboard)
-window.viewFullPhoto = function(src) {
-    // Basic checks
-    if (!src || src === 'null' || src === 'undefined' || src === '') {
-        console.log("Walang valid photo.");
-        return;
-    }
-    // Huwag buksan kung default avatar lang (galing UI Avatars)
-    if (src.includes('ui-avatars.com')) {
-        return;
-    }
+    // 1. I-define ang Global Function
+    window.viewFullPhoto = function(src) {
+        // Basic checks
+        if (!src || src === 'null' || src === 'undefined' || src === '') return;
+        // Huwag buksan kung default avatar lang
+        if (src.includes('ui-avatars.com')) return;
 
-    const modal = document.getElementById('full-image-modal');
-    const display = document.getElementById('full-image-display');
+        const modal = document.getElementById('full-image-modal');
+        const display = document.getElementById('full-image-display');
 
-    if (modal && display) {
-        // I-set ang image source
-        display.src = src;
-        // Ipakita ang modal
-        modal.classList.add('show');
-        // Mag-add ng history para gumana ang Back button ng phone
-        history.pushState({ modal: 'fullImage' }, 'View Image', '#view-image');
-    }
-};
+        if (modal && display) {
+            display.src = src;
+            modal.classList.add('show');
+            history.pushState({ modal: 'fullImage' }, 'View Image', '#view-image');
+        }
+    };
 
-// 2. Setup Close Buttons (Naka-isolate sa loob ng Block {} para iwas error)
-{
-    const modal = document.getElementById('full-image-modal');
-    const closeBtn = document.getElementById('full-image-close-btn');
+    // 2. Setup Close Buttons (Isolated Block)
+    {
+        const modal = document.getElementById('full-image-modal');
+        const closeBtn = document.getElementById('full-image-close-btn');
 
-    // Close Button Logic
-    if (closeBtn) {
-        closeBtn.onclick = function() {
-            if (modal) modal.classList.remove('show');
-            if (history.state && history.state.modal === 'fullImage') history.back();
-        };
-    }
-
-    // Background Click Logic (Pag pinindot ang itim sa gilid)
-    if (modal) {
-        modal.onclick = function(e) {
-            if (e.target === modal || e.target.classList.contains('full-image-content')) {
-                modal.classList.remove('show');
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                if (modal) modal.classList.remove('show');
                 if (history.state && history.state.modal === 'fullImage') history.back();
-            }
-        };
-    }
-}</script>
+            };
+        }
 
-<div id="full-image-modal" class="modal-overlay">
+        if (modal) {
+            modal.onclick = function(e) {
+                if (e.target === modal || e.target.classList.contains('full-image-content')) {
+                    modal.classList.remove('show');
+                    if (history.state && history.state.modal === 'fullImage') history.back();
+                }
+            };
+        }
+    }
+
+    /* ========================================= */
+    /* SAFE CLOSE LISTENER (FIX)            */
+    /* ========================================= */
+
+    function attachSafeCloseListener(btnId, modalId) {
+        const btn = document.getElementById(btnId);
+        const modal = document.getElementById(modalId);
+
+        if (btn) {
+            // Clone trick: Tinatanggal ang lumang listeners para malinis
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            // Ikabit ang SAFE na utos
+            newBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof playButtonSound === 'function') playButtonSound();
+
+                // THE SECRET SAUCE: Flag para hindi mag-exit prompt
+                window.isClosingModal = true; 
+                gameState = 'modal_open'; 
+
+                if (modal) modal.classList.remove('show');
+                history.back(); // Ligtas na back
+            });
+        }
+    }
+
+    // I-activate ang listeners para sa Profile at Settings
+    attachSafeCloseListener('profile-close-btn', 'profile-modal');
+    attachSafeCloseListener('settings-close-btn', 'settings-modal');
+
+</script> <div id="full-image-modal" class="modal-overlay">
     <span class="modal-close-btn" id="full-image-close-btn">&times;</span>
     <div class="full-image-content">
         <img id="full-image-display" src="">
