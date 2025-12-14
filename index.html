@@ -14118,39 +14118,7 @@ function showRankUpScreen(newRankIndex) {
         }
     }
 
-    /* ========================================= */
-    /* SAFE CLOSE LISTENER (FIX)            */
-    /* ========================================= */
-
-    function attachSafeCloseListener(btnId, modalId) {
-        const btn = document.getElementById(btnId);
-        const modal = document.getElementById(modalId);
-
-        if (btn) {
-            // Clone trick: Tinatanggal ang lumang listeners para malinis
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-
-            // Ikabit ang SAFE na utos
-            newBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (typeof playButtonSound === 'function') playButtonSound();
-
-                // THE SECRET SAUCE: Flag para hindi mag-exit prompt
-                window.isClosingModal = true; 
-                gameState = 'modal_open'; 
-
-                if (modal) modal.classList.remove('show');
-                history.back(); // Ligtas na back
-            });
-        }
-    }
-
-    // I-activate ang listeners para sa Profile at Settings
-    attachSafeCloseListener('profile-close-btn', 'profile-modal');
-    attachSafeCloseListener('settings-close-btn', 'settings-modal');
-
+    
 </script> <div id="full-image-modal" class="modal-overlay">
     <span class="modal-close-btn" id="full-image-close-btn">&times;</span>
     <div class="full-image-content">
