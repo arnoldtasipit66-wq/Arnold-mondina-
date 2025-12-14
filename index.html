@@ -6836,13 +6836,22 @@ function updateVoiceButtonIcon() { return; /* Do nothing */ }
         profileCloseBtn.parentNode.replaceChild(newBtn, profileCloseBtn);
         
         newBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation(); // Pigilan ang click na tumagos
             playButtonSound();
+            
+            // ▼▼▼ ITO ANG SOLUSYON ▼▼▼
+            // Itaas ang flag para alam ng laro na nagsasara ka lang ng modal
+            window.isClosingModal = true; 
+            gameState = 'modal_open'; // Siguraduhing safe ang state
+
+            // Manu-manong itago ang modal para mabilis
+            const modal = document.getElementById('profile-modal');
+            if (modal) modal.classList.remove('show');
+
+            // Trigger Back (Ngayon ay safe na dahil sa flag sa taas)
             history.back(); 
         });
-        
-        // Backup: Lagyan din ng onclick attribute direct sa element
-        newBtn.onclick = () => { history.back(); };
     }
 
     
