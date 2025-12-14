@@ -14185,5 +14185,90 @@ function showRankUpScreen(newRankIndex) {
     </div>
 </div>
 
+<script>
+    // --- 1. GLOBAL IMAGE VIEWER LOGIC ---
+    window.viewFullPhoto = function(src) {
+        // Basic checks
+        if (!src || src === 'null' || src === 'undefined' || src === '') return;
+        if (src.includes('ui-avatars.com')) return;
+
+        const modal = document.getElementById('full-image-modal');
+        const display = document.getElementById('full-image-display');
+
+        if (modal && display) {
+            display.src = src;
+            modal.classList.add('show');
+            history.pushState({ modal: 'fullImage' }, 'View Image', '#view-image');
+        }
+    };
+
+    // --- 2. CLOSE BUTTONS LOGIC ---
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // Full Image Close
+        const imgModal = document.getElementById('full-image-modal');
+        const imgCloseBtn = document.getElementById('full-image-close-btn');
+
+        if (imgCloseBtn) {
+            imgCloseBtn.onclick = function() {
+                if (imgModal) imgModal.classList.remove('show');
+                if (history.state && history.state.modal === 'fullImage') history.back();
+            };
+        }
+
+        if (imgModal) {
+            imgModal.onclick = function(e) {
+                if (e.target === imgModal || e.target.classList.contains('full-image-content')) {
+                    imgModal.classList.remove('show');
+                    if (history.state && history.state.modal === 'fullImage') history.back();
+                }
+            };
+        }
+
+        // Rank Up Claim Button
+        const rankClaimBtn = document.getElementById('rank-up-claim-btn');
+        const rankModal = document.getElementById('rank-up-modal');
+        if(rankClaimBtn && rankModal) {
+            rankClaimBtn.onclick = function() {
+                if (typeof playButtonSound === 'function') playButtonSound();
+                rankModal.classList.remove('show');
+            };
+        }
+
+        // Activate Safe Listeners for Profile & Settings
+        attachSafeCloseListener('profile-close-btn', 'profile-modal');
+        attachSafeCloseListener('settings-close-btn', 'settings-modal');
+    });
+
+    // --- 3. SAFE CLOSE LISTENER (Back Button Fix) ---
+    function attachSafeCloseListener(btnId, modalId) {
+        const btn = document.getElementById(btnId);
+        const modal = document.getElementById(modalId);
+
+        if (btn) {
+            // Tanggalin ang lumang listener para iwas conflict
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            newBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Play sound kung available
+                if (typeof playButtonSound === 'function') playButtonSound();
+
+                // Itaas ang Flag para alam ng system na safe ito
+                if (window) window.isClosingModal = true; 
+                if (typeof gameState !== 'undefined') gameState = 'modal_open'; 
+
+                if (modal) modal.classList.remove('show');
+                
+                // Trigger Back
+                history.back();
+            });
+        }
+    }
+</script>
+
 </body>
 </html>
