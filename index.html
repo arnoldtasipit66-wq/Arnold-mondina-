@@ -6271,10 +6271,18 @@ window.isInGame = false;
 window.onpopstate = (event) => {
     const state = event.state || { modal: 'lobby' };
 
-    // 1. FLAG CHECK (CLOSE BUTTON)
     if (window.isClosingModal) {
         window.isClosingModal = false;
+        
+        // Itago lang ang modals
         document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+        
+        // ▼▼▼ ITO ANG BINAGO ▼▼▼
+        // Kung nasa Lobby tayo, ipakita ang Lobby UI.
+        if (state.modal === 'lobby' || !window.isInGame) {
+            showLobbyUI();
+            gameState = 'lobby';
+        }
         
         // ▼▼▼ DITO ANG BAGONG LOGIC ▼▼▼
         // Kung ang history ay 'lobby' O KAYA ay 'WALA TAYONG LARO' (!window.isInGame)
@@ -12233,6 +12241,13 @@ function placeChipOnSpot(chipToPlace) {
         function handlePointerDown(e) { 
     e.preventDefault(); 
 
+    // ▼▼▼ BAGONG DAGDAG: HARANG KAPAG MAY MODAL ▼▼▼
+    // Kung may nakabukas na modal (tulad ng Profile), 'wag pansinin ang click sa mesa
+    if (document.querySelector('.modal-overlay.show')) {
+        return; 
+    }
+    // ▲▲▲ ▲▲▲
+
     if (isTutorialActive) {
         const currentStep = tutorialSteps[tutorialStep];
         if (currentStep && currentStep.trigger === 'drag') {
@@ -13048,8 +13063,6 @@ function showGameUI() {
 
 async function showProfile(target) {
     playButtonSound();
-    
-    gameState = 'modal_open'; 
     
     const modal = document.getElementById('profile-modal');
     
