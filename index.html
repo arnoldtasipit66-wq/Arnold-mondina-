@@ -14077,46 +14077,7 @@ function showRankUpScreen(newRankIndex) {
     };
 }
 
-// --- FINAL & SAFE GLOBAL IMAGE VIEWER ---
 
-    // 1. I-define ang Global Function
-    window.viewFullPhoto = function(src) {
-        // Basic checks
-        if (!src || src === 'null' || src === 'undefined' || src === '') return;
-        // Huwag buksan kung default avatar lang
-        if (src.includes('ui-avatars.com')) return;
-
-        const modal = document.getElementById('full-image-modal');
-        const display = document.getElementById('full-image-display');
-
-        if (modal && display) {
-            display.src = src;
-            modal.classList.add('show');
-            history.pushState({ modal: 'fullImage' }, 'View Image', '#view-image');
-        }
-    };
-
-    // 2. Setup Close Buttons (Isolated Block)
-    {
-        const modal = document.getElementById('full-image-modal');
-        const closeBtn = document.getElementById('full-image-close-btn');
-
-        if (closeBtn) {
-            closeBtn.onclick = function() {
-                if (modal) modal.classList.remove('show');
-                if (history.state && history.state.modal === 'fullImage') history.back();
-            };
-        }
-
-        if (modal) {
-            modal.onclick = function(e) {
-                if (e.target === modal || e.target.classList.contains('full-image-content')) {
-                    modal.classList.remove('show');
-                    if (history.state && history.state.modal === 'fullImage') history.back();
-                }
-            };
-        }
-    }
 
     
 </script> <div id="full-image-modal" class="modal-overlay">
