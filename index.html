@@ -14389,28 +14389,43 @@ function startSpin() {
 }
 
 function animateSpin() {
-    wheelVelocity *= 0.985; 
+    // 1. Friction: Dati 0.985, ginawang 0.96 para mas mabilis bumagal
+    wheelVelocity *= 0.96; 
+
     wheelAngle += wheelVelocity;
     drawWheel();
 
-    if (wheelVelocity < 0.002) {
+    // 2. Cutoff: Dati 0.002, ginawang 0.005 para huminto agad pag mabagal na
+    if (wheelVelocity < 0.005) {
         finishSpin();
     } else {
         requestAnimationFrame(animateSpin);
     }
 }
-
 function finishSpin() {
     isSpinning = false;
     wheelVelocity = 0;
     
-    const arcSize = (2 * Math.PI) / SEGMENTS.length;
-    const currentRotation = wheelAngle % (2 * Math.PI);
-    let index = Math.floor(((2 * Math.PI) - currentRotation + (Math.PI / 2)) % (2 * Math.PI) / arcSize) % SEGMENTS.length;
+    const arcSize = (2 * Math.PI) / SEGMENTS.length; // Sukat ng bawat slice
+    
+    // 1. Gawing positive ang angle (normalize)
+    const currentRotation = (wheelAngle % (2 * Math.PI) + (2 * Math.PI)) % (2 * Math.PI);
+    
+    // 2. MATH FIX:
+    // Ang Arrow ay nasa Taas (270 degrees o 1.5 * PI).
+    // Ang formula: (Arrow Position - Wheel Rotation) % Circle
+    let pointerPos = (1.5 * Math.PI - currentRotation + (2 * Math.PI)) % (2 * Math.PI);
+    
+    // 3. Kunin ang index
+    let index = Math.floor(pointerPos / arcSize);
+    
+    // Safety check kung lumagpas sa array
+    if (index >= SEGMENTS.length) index = 0;
     
     const winningSegment = SEGMENTS[index];
     const prize = winningSegment.value;
 
+    // --- REWARD LOGIC ---
     spinStatus.innerHTML = `YOU WON: <span style="color:${winningSegment.color}; font-size:1.5em;">${prize}</span> COINS!`;
     
     playerTotalCurrency += prize;
@@ -14419,12 +14434,12 @@ function finishSpin() {
     saveLastClaimTime();
     updateDailyRewardButtonState();
 
+    // Play Sound & Effects
     if(typeof playCoinSound === 'function') playCoinSound();
     triggerFireworks(); 
 
     spinBtn.textContent = "CLAIMED";
 }
-
 // Initial Draw
 setTimeout(drawWheel, 1000);
 
