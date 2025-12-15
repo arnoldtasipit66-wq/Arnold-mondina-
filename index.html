@@ -14301,15 +14301,23 @@ function showRankUpScreen(newRankIndex) {
 
     // 6. Show Modal & Fireworks
     modal.classList.add('show');
-    triggerFireworks(); // Gamitin ang existing fireworks function mo
+    if (typeof triggerFireworks === 'function') triggerFireworks(); 
     
-    // 7. Close Button Listener
+    // 7. Close Button Listener (Manual Close)
     claimBtn.onclick = function() {
-        playButtonSound();
+        if (typeof playButtonSound === 'function') playButtonSound();
         modal.classList.remove('show');
     };
-}
 
+    // ▼▼▼ 8. AUTO CLOSE TIMER (6 Seconds) ▼▼▼
+    // Ito ang magsasara ng kusa pagtapos ng anim na segundo
+    setTimeout(() => {
+        if (modal.classList.contains('show')) {
+            modal.classList.remove('show');
+        }
+    }, 6000); 
+    // ▲▲▲ ▲▲▲
+}
 
 /* ========================================= */
 /* 🎡 SPIN WHEEL LOGIC (IDINAGDAG)        🎡 */
