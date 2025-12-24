@@ -5052,6 +5052,55 @@ div#opponent-info.hud-active {
         right: 10px !important;
     }
 }
+
+/* ========================================= */
+/* 🖥️ PC / LARGE SCREEN FIXES             🖥️ */
+/* ========================================= */
+
+@media screen and (min-width: 1024px) {
+
+    /* 1. LIMIT MODAL WIDTH (Para hindi sobrang lapad) */
+    .modal-overlay .content {
+        max-width: 600px !important; /* Limitahan ang lapad */
+        width: 100% !important;
+        font-size: 1.2em !important; /* Lakihan ang text para mabasa sa monitor */
+        border: 3px solid #FFD700 !important; /* Mas makapal na border sa PC */
+    }
+
+    /* 2. SHOP SPECIFIC (Mas malapad konti ang Shop para sa items) */
+    #shop-modal .content {
+        max-width: 900px !important; 
+    }
+
+    /* 3. SHOP GRID (Dadamihan ang items per row) */
+    #shop-items-container {
+        /* Sa PC, magkakasya ang 4-5 items sa isang hilera */
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+        gap: 20px !important;
+    }
+
+    /* 4. BACKGROUND (Mas magandang background sa PC) */
+    body {
+        background-size: cover !important; /* Sakupin ang buong screen */
+    }
+
+    /* 5. UI BUTTONS (Lakihan ang pindutan sa gilid) */
+    .ui-button, .icon-button {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 1.5em !important;
+        cursor: pointer !important; /* Magkaroon ng 'hand' cursor pag tinutok ang mouse */
+    }
+
+    /* 6. COINS DISPLAY (Lakihan para kita agad) */
+    #currency-display {
+        transform: scale(1.3); /* Palakihin ng 30% */
+        transform-origin: top left;
+        top: 20px !important;
+        left: 20px !important;
+    }
+}
+
         
 </style>
 </head>
@@ -5701,7 +5750,7 @@ const LEVEL_UP_COIN_REWARD = 250;
 
 const RANKS = [
     { name: "Bronze",       minTrophies: 0,      color: "#CD7F32", icon: "🥉", cssClass: "rank-border-bronze" },
-    { name: "Silver",       minTrophies: 5,    color: "#C0C0C0", icon: "🥈", cssClass: "rank-border-silver" }, 
+    { name: "Silver",       minTrophies: 500,    color: "#C0C0C0", icon: "🥈", cssClass: "rank-border-silver" }, 
     { name: "Gold",         minTrophies: 1500,   color: "#FFD700", icon: "🥇", cssClass: "rank-border-gold" }, 
     { name: "Platinum",     minTrophies: 3000,   color: "#00CED1", icon: "💠", cssClass: "rank-border-platinum" }, 
     { name: "Diamond",      minTrophies: 6000,   color: "#B9F2FF", icon: "💎", cssClass: "rank-border-diamond" }, 
@@ -5962,7 +6011,7 @@ ghostHand = document.getElementById('ghost-hand'),
               
               COLLISION_FRICTION = 0.5, // 0 = Walang preno sa banggaan, 1 = Sobrang preno
        
-              FRICTION_PER_SECOND = 0.2, // <-- ITO ANG PALIT SA 'FRICTION'
+              FRICTION_PER_SECOND = 0.3, // <-- ITO ANG PALIT SA 'FRICTION'
               MIN_VELOCITY = 5.0, // <-- ITO ANG PALIT SA 'MIN_VELOCITY'
               MIN_ROTATION_SPEED = 0.01, 
               ROTATION_SPEED = 0.001,
@@ -7128,28 +7177,23 @@ function updateVoiceButtonIcon() { return; /* Do nothing */ }
             });
         }
 
-// Ito ang taga-play ng sound
+// --- FIX: BETTER COIN SOUND FOR PC & MOBILE ---
+// Siguraduhing tama ang link ng audio mo
+const coinAudioUrl = "https://arnoldtasipit66-wq.github.io/my-game-assets/coin-dropped-81172.mp3";
+
 function playCoinSound() {
-    // 1. Hanapin yung player na nilagay natin sa HTML
-    const sfx = document.getElementById('coin-sfx');
+    // Gumawa ng bagong audio object bawat tawag
+    // Mas reliable ito sa PC kaysa sa cloneNode
+    const audio = new Audio(coinAudioUrl);
+    audio.volume = 0.5;
     
-    if (sfx) {
-        // 2. Gumawa ng "Clone" (Kopya)
-        // Bakit? Para kung sunod-sunod ang coins, hindi maputol ang tunog!
-        const clone = sfx.cloneNode();
-        
-        // 3. I-set ang volume (0.1 to 1.0)
-        clone.volume = 0.5; 
-        
-        // 4. Play!
-        clone.play().catch(e => console.log("Audio error:", e));
-        
-        // 5. Itapon ang clone pagtapos tumunog para malinis
-        clone.onended = function() {
-            clone.remove();
-        };
-    }
+    // Play at kalimutan (Kusa itong mawawala sa memory pagtapos)
+    audio.play().catch(e => {
+        // Hayaan lang kung mag-error (para di masira laro)
+        console.warn("Coin sound blocked:", e);
+    });
 }
+
         async function playButtonSound() {
              if (buttonSoundPlaying) return;
              // Ensure audio is initialized, especially if this is the first interaction
@@ -10763,23 +10807,24 @@ function setCueForCurrentTurn() {
     const cueToDisplay = SHOP_ITEMS.cues.find(i => i.id === cueIdToUse);
     const defaultCueData = SHOP_ITEMS.cues.find(i => i.id === 'default');
     
-    // Base sizes (Pang Mobile)
+    // Base sizes (Original size ng image)
     const baseWidth = cueToDisplay?.displayWidth || defaultCueData?.displayWidth || 450;
     const baseHeight = cueToDisplay?.displayHeight || defaultCueData?.displayHeight || 150;
 
-    // ▼▼▼ DITO ANG FIX PARA SA PC (AUTO-SCALE) ▼▼▼
+    // ▼▼▼ DITO ANG BAGONG MATH (PROPORTIONAL SCALING) ▼▼▼
     
-    // 1. Detect kung malaki ang screen (PC/Laptop usually > 1024px)
-    const isBigScreen = window.innerWidth > 1024;
+    // 1. Kunin ang ACTUAL na sukat ng mesa sa screen ngayon
+    const canvasRect = canvas.getBoundingClientRect();
     
-    // 2. Set Multiplier: 
-    // Kung PC: 1.6 (Palakihin ng 60%)
-    // Kung Mobile: 1.0 (Normal size)
-    const scaleMultiplier = isBigScreen ? 1.6 : 1.0; 
+    // 2. Desisyon: Ang tako ay dapat 45% ng lapad ng mesa
+    // (Ito ang magic number para sakto lang tignan sa mobile man o PC)
+    const targetStickLength = canvasRect.width * 0.45; 
 
-    // 3. Compute Final Size
-    const finalWidth = baseWidth * scaleMultiplier;
-    const finalHeight = baseHeight * scaleMultiplier;
+    // 3. Kalkulahin ang Height base sa Aspect Ratio (Para hindi maging "taba" o "payat")
+    // Formula: (TargetWidth / OriginalWidth) * OriginalHeight
+    const ratio = targetStickLength / baseWidth;
+    const finalWidth = targetStickLength;
+    const finalHeight = baseHeight * ratio;
 
     // ▲▲▲ END NG FIX ▲▲▲
 
@@ -10792,7 +10837,7 @@ function setCueForCurrentTurn() {
 
     if (imageSrc) {
         cueStickElement.src = imageSrc;
-        // I-apply ang bagong computed size
+        // I-apply ang computed size
         cueStickElement.style.width = `${finalWidth}px`;
         cueStickElement.style.height = `${finalHeight}px`;
     } else {
@@ -10801,6 +10846,7 @@ function setCueForCurrentTurn() {
         cueStickElement.style.height = '0px';
     }
 }
+
 
 let displayedCurrency = 0; 
 let currencyAnimInterval = null; 
@@ -14015,6 +14061,10 @@ function attachSafeCloseListener(btnId, modalId) {
 attachSafeCloseListener('profile-close-btn', 'profile-modal');
 attachSafeCloseListener('settings-close-btn', 'settings-modal');
         
+// ============================================
+// 🚀 FINAL PRELOADER (ANTI-STUCK + AUDIO FIX)
+// ============================================
+
 const assetsToLoad = [
     // 1. Audio Files (Music & SFX)
     'https://arnoldtasipit66-wq.github.io/my-game-assets/mrbas-music-labs-roots-reggae-285790.mp3',
@@ -14029,8 +14079,7 @@ const assetsToLoad = [
     'https://i.imgur.com/FYXWKhr.png',  // Default Cue Stick
 ];
 
-// 3. Dynamic Images (Galing sa Shop Items)
-// Kinukuha natin lahat ng imageSrc mula sa SHOP_ITEMS object mo
+// 3. Dynamic Images (Check kung nage-exist ang SHOP_ITEMS)
 if (typeof SHOP_ITEMS !== 'undefined') {
     if (SHOP_ITEMS.cues) SHOP_ITEMS.cues.forEach(item => assetsToLoad.push(item.imageSrc));
     if (SHOP_ITEMS.frames) SHOP_ITEMS.frames.forEach(item => assetsToLoad.push(item.imageSrc));
@@ -14043,92 +14092,106 @@ const loadingText = document.getElementById('loading-text');
 const spinner = document.querySelector('.loader-spinner');
 const startBtn = document.getElementById('start-game-btn');
 const preloaderOverlay = document.getElementById('preloader-overlay');
+let hasStarted = false; // Flag para hindi mag-doble
 
 function updateProgress() {
     loadedCount++;
     const percent = Math.floor((loadedCount / totalAssets) * 100);
-    loadingText.textContent = `Loading Assets... ${percent}%`;
+    
+    // Update text kung hindi pa tapos
+    if (!hasStarted && loadingText) {
+        loadingText.textContent = `Loading Assets... ${percent}%`;
+    }
 
     if (loadedCount >= totalAssets) {
         onLoadingComplete();
     }
 }
 
-function preloadImage(src) {
-    const img = new Image();
-    img.src = src;
-    img.onload = updateProgress;
-    img.onerror = () => {
-        console.warn("Failed to load image:", src);
-        updateProgress(); // Ituloy pa rin kahit fail para di ma-stuck
-    };
-}
+function onLoadingComplete() {
+    if (hasStarted) return; 
+    hasStarted = true;
 
-// Simpleng fetch para sa audio para masiguradong cached
-function preloadAudio(src) {
-    const audio = new Audio();
-    audio.src = src;
-    audio.oncanplaythrough = updateProgress;
-    audio.onerror = () => {
-        // Fallback: Minsan strict ang browser sa audio download, ituloy lang
-        console.warn("Audio preload skip:", src);
-        updateProgress();
-    };
-    // Force load
-    audio.load();
+    if (loadingText) loadingText.textContent = "Game Ready!";
+    if (spinner) spinner.style.display = 'none'; 
+    if (startBtn) startBtn.style.display = 'block'; 
 }
 
 function startPreloading() {
     console.log(`Starting preload of ${totalAssets} assets...`);
     
+    // 1. SAFETY TIMER: Pilitin mag-start pagkalipas ng 8 segundo
+    // Kahit ma-stuck sa 0% o 84%, mag-o-open pa rin ang laro.
+    setTimeout(() => {
+        if (!hasStarted) {
+            console.warn("Loading took too long. Forcing game start...");
+            if (loadingText) loadingText.textContent = "Loading slow... Skipping.";
+            setTimeout(onLoadingComplete, 1000); 
+        }
+    }, 8000); 
+
     if (totalAssets === 0) {
         onLoadingComplete();
         return;
     }
 
     assetsToLoad.forEach(src => {
+        // AUDIO LOADING
         if (src.endsWith('.mp3') || src.endsWith('.wav')) {
-            // Audio loading strategy (Simple fetch for caching)
-            fetch(src).then(updateProgress).catch(updateProgress);
-        } else {
-            preloadImage(src);
+            fetch(src)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network error");
+                    updateProgress();
+                })
+                .catch(err => {
+                    console.warn("Audio load failed (Skipping):", src);
+                    updateProgress(); 
+                });
+        } 
+        // IMAGE LOADING
+        else {
+            const img = new Image();
+            img.src = src;
+            img.onload = updateProgress;
+            img.onerror = () => {
+                console.warn("Image load failed (Skipping):", src);
+                updateProgress(); 
+            };
         }
     });
 }
 
-function onLoadingComplete() {
-    loadingText.textContent = "Game Ready!";
-    spinner.style.display = 'none'; // Tago spinner
-    startBtn.style.display = 'block'; // Pakita Start Button
+// Listener para sa Start Button (With Audio Fix)
+if (startBtn) {
+    startBtn.addEventListener('click', async () => {
+        // 1. Initialize Audio Context
+        if (typeof Tone !== 'undefined') {
+            await Tone.start();
+            console.log('Audio Context Started');
+        }
+        
+        // 2. Play Music
+        if (typeof playBackgroundMusic === 'function') playBackgroundMusic();
+
+        // 3. Audio Warm-up (Para gumana sounds sa PC)
+        const winSfx = document.getElementById('win-sfx');
+        const loseSfx = document.getElementById('lose-sfx');
+        if (winSfx) { winSfx.volume = 0; winSfx.play().then(() => { winSfx.pause(); winSfx.currentTime = 0; winSfx.volume = 0.8; }).catch(e=>{}); }
+        if (loseSfx) { loseSfx.volume = 0; loseSfx.play().then(() => { loseSfx.pause(); loseSfx.currentTime = 0; loseSfx.volume = 0.8; }).catch(e=>{}); }
+
+        // 4. Hide Preloader & Start
+        if (preloaderOverlay) preloaderOverlay.classList.add('hidden');
+        if (typeof init === 'function') init();
+        
+        setTimeout(() => {
+            if (preloaderOverlay) preloaderOverlay.remove();
+        }, 600);
+    });
 }
-
-// Listener para sa Start Button
-startBtn.addEventListener('click', async () => {
-    // 1. Initialize Audio Context (Tone.js)
-    // Ito ang solusyon para gumana ang sounds sa mobile/Chrome
-    if (typeof Tone !== 'undefined') {
-        await Tone.start();
-        console.log('Audio Context Started via Preloader');
-    }
-    
-    // 2. Initialize Background Music (Kung meron)
-    playBackgroundMusic();
-
-    // 3. Fade Out Preloader
-    preloaderOverlay.classList.add('hidden');
-    
-    // 4. Start the Actual Game Logic
-    // Dito natin tatawagin ang original init() function mo
-    init();
-    
-    // Tanggalin sa DOM pagtapos ng animation para tipid sa memory
-    setTimeout(() => {
-        preloaderOverlay.remove();
-    }, 600);
-});
 
 // Simulan ang proseso
 startPreloading();
+
 
  // --- PROFILE PICTURE UPLOAD LOGIC ---
 
