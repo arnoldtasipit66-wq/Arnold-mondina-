@@ -10789,7 +10789,6 @@ function applyEquippedItems() {
 
 function setCueForCurrentTurn() {
     let isPlayerShooting = false;
-    // Check kung sino ang titira
     if (gameState !== 'menu' && gameState !== 'gameover') {
         isPlayerShooting = isOnlineGame ? isMyTurnOnline : playerTurn; 
     } else {
@@ -10803,25 +10802,27 @@ function setCueForCurrentTurn() {
         cueIdToUse = isOnlineGame ? (opponentEquippedCueId || 'default') : 'default';  
     }
 
-    // Hanapin ang data ng cue
     const cueToDisplay = SHOP_ITEMS.cues.find(i => i.id === cueIdToUse);
     const defaultCueData = SHOP_ITEMS.cues.find(i => i.id === 'default');
     
-    // Base sizes (Original size ng image)
     const baseWidth = cueToDisplay?.displayWidth || defaultCueData?.displayWidth || 450;
     const baseHeight = cueToDisplay?.displayHeight || defaultCueData?.displayHeight || 150;
 
-    // ▼▼▼ DITO ANG BAGONG MATH (PROPORTIONAL SCALING) ▼▼▼
+    // ▼▼▼ DITO ANG FIX SA SIZE (MOBILE vs PC) ▼▼▼
     
-    // 1. Kunin ang ACTUAL na sukat ng mesa sa screen ngayon
     const canvasRect = canvas.getBoundingClientRect();
     
-    // 2. Desisyon: Ang tako ay dapat 45% ng lapad ng mesa
-    // (Ito ang magic number para sakto lang tignan sa mobile man o PC)
-    const targetStickLength = canvasRect.width * 0.45; 
+    // Check kung Mobile/Tablet (Width < 1024px)
+    const isSmallScreen = window.innerWidth < 1024;
 
-    // 3. Kalkulahin ang Height base sa Aspect Ratio (Para hindi maging "taba" o "payat")
-    // Formula: (TargetWidth / OriginalWidth) * OriginalHeight
+    // LOGIC:
+    // Kung Mobile: 65% ng mesa ang haba (0.65) -> Para malaki tignan
+    // Kung PC: 45% ng mesa ang haba (0.45) -> Para sakto lang
+    const sizeFactor = isSmallScreen ? 0.65 : 0.45; 
+
+    const targetStickLength = canvasRect.width * sizeFactor; 
+
+    // Calculate Aspect Ratio
     const ratio = targetStickLength / baseWidth;
     const finalWidth = targetStickLength;
     const finalHeight = baseHeight * ratio;
@@ -10837,7 +10838,6 @@ function setCueForCurrentTurn() {
 
     if (imageSrc) {
         cueStickElement.src = imageSrc;
-        // I-apply ang computed size
         cueStickElement.style.width = `${finalWidth}px`;
         cueStickElement.style.height = `${finalHeight}px`;
     } else {
