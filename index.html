@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Pinoy Pool</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <!-- Tone.js for audio synthesis -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
 
     
@@ -14,24 +18,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
+    /* --- PINOY POOL TELEGRAM THEME (NEON) --- */
     :root {
-        --felt-green: #006A4E;
-        --wood-brown: #6B4226;
-        --light-wood: #A0522D;
-        --gold-accent: #FFD700;
-        --dark-bg: rgba(20, 20, 35, 0.95); 
-        --light-text: #FFFFFF;
+        --bg-dark: #0b0c15; 
+        --felt-color: #1a1b2e;
+        --neon-blue: #00f3ff;
+        --neon-pink: #ff00ff;
+        --neon-green: #00ff9d;
+        --glass-panel: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-main: #ffffff;
     }
 
     body, html {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    
-    
-    background-color: #2c2c2c; 
-    
+        margin: 0; padding: 0;
+        width: 100%; height: 100%;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: 'Nunito', sans-serif;
+        overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+        /* Disable long press context menu */
+        -webkit-touch-callout: none; 
+    }
+
+    /* BACKGROUND EFFECT */
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle at 50% 50%, rgba(0, 243, 255, 0.1) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: -1;
+    } 
     
 background-image: url('https://i.imgur.com/Wg3y3Zn.jpeg');    
     background-repeat: repeat; 
@@ -5102,9 +5122,97 @@ div#opponent-info.hud-active {
 }
 
         
+
+    /* --- LANDSCAPE ENFORCER (Ang Harang) --- */
+    #rotate-warning {
+        display: none; 
+    }
+
+    @media only screen and (orientation: portrait) {
+        #game-container, #ui-layer, .bottom-nav, canvas, #game-wrapper, #lobby-screen {
+            display: none !important;
+        }
+
+        #rotate-warning {
+            display: flex;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: #0b0c15;
+            z-index: 999999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+        }
+
+        .phone-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: rotate-anim 2s infinite ease-in-out;
+        }
+
+        .rotate-content h1 {
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 30px;
+            color: #00ff88;
+            margin: 0;
+        }
+        
+        @keyframes rotate-anim {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-90deg); }
+            50% { transform: rotate(-90deg); }
+            100% { transform: rotate(0deg); }
+        }
+    }
+
+    /* BUTTON STYLES (Neon) */
+    button, .menu-button {
+        background: linear-gradient(135deg, #00ff88 0%, #00bd65 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        color: #000 !important;
+        font-weight: bold;
+        text-transform: uppercase;
+        box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+    }
+    
+    button:active { transform: scale(0.95); }
+
+    /* MODAL STYLES (Glass) */
+    .modal-overlay .content {
+        background: rgba(20, 20, 35, 0.95) !important;
+        border: 1px solid var(--neon-blue) !important;
+        box-shadow: 0 0 30px rgba(0, 243, 255, 0.2) !important;
+        border-radius: 20px !important;
+        color: white !important;
+    }
+
+    h2 { color: var(--neon-blue) !important; text-shadow: 0 0 10px var(--neon-blue) !important; }
+    
+    /* LOADING SCREEN */
+    #preloader-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #0b0c15; z-index: 99999;
+        display: flex; justify-content: center; align-items: center;
+    }
 </style>
 </head>
 <body>
+
+ 
+
+    <div id="rotate-warning">
+        <div class="rotate-content">
+            <div class="phone-icon">📱 ➡️ 🔄</div>
+            <h1>PAKI-LANDSCAPE PO</h1>
+            <p>Mas masarap tumira kapag pahalang, Boss.</p>
+        </div>
+    </div>
+    <script> ... </script> 
+    <div id="game-container"> ...
 
 <div id="private-chat-modal" class="modal-overlay">
     <div class="content" style="width: 90%; max-width: 450px; height: 80vh; padding: 0;">
@@ -5338,7 +5446,12 @@ div#opponent-info.hud-active {
             <div class="dock-icon">🎁</div>
             <div class="dock-label">Reward</div>
         </div>
-    </div>
+
+        <div class="dock-item" onclick="showAdReward()">
+            <div class="dock-icon">📺</div>
+            <div class="dock-label">Free Coins</div>
+        </div>
+        </div>
 </div>
 
   </div> <div id="game-mode-select" class="modal-overlay" style="display: none;">
@@ -5471,7 +5584,10 @@ div#opponent-info.hud-active {
             <input type="file" id="profile-file-input" accept="image/*" style="display: none;">
             
             <h2 id="profile-name-display">Player Name</h2>
-            <div id="profile-rank-text-small">[Rank]</div> </div>
+
+            <div id="ton-connect-button" style="margin-top: 10px; margin-bottom: 10px; display: flex; justify-content: center; width: 100%;"></div>
+            <div id="profile-rank-text-small">[Rank]</div> 
+        </div>
 
         <div class="profile-right-col">
             
@@ -5689,6 +5805,28 @@ div#opponent-info.hud-active {
     </div>
     
     <script type="module">
+// --- TELEGRAM INIT & FULLSCREEN FORCE ---
+    const tg = window.Telegram.WebApp;
+    
+    // 1. Ready & Expand
+    tg.ready();
+    tg.expand();
+    
+    // 2. Kulitin natin mag-expand (Safety Loop)
+    let expandInterval = setInterval(() => {
+        if (!tg.isExpanded) {
+            tg.expand();
+        } else {
+            clearInterval(expandInterval);
+        }
+    }, 500);
+
+    // 3. Setup Colors
+    tg.setHeaderColor('#0b0c15');
+    tg.setBackgroundColor('#0b0c15');
+    
+    // 4. Force Height (Iwas puti sa baba)
+    document.body.style.height = window.innerHeight + "px";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, updateDoc, getDoc, deleteDoc, serverTimestamp, increment, collection, query, orderBy, limit, getDocs, addDoc, runTransaction, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -6411,7 +6549,7 @@ async function endGame(winnerTextMessage, finalGameData = null) {
     }
     
     const onlineRematchButton = document.getElementById('rematch-button');
-    if (isOnlineGame) {
+    
         updatePlayerData(localPlayerUid, winnerTextMessage.includes("You Win"));
         aiRematchButton.style.display = 'none';
         backToMenuButton.style.display = 'block';
@@ -7330,75 +7468,61 @@ updateAndDrawFireworks();
 function toggleMusic() { const isMuted = backgroundPlaylist[0].muted; backgroundPlaylist.forEach(player => { player.muted = !isMuted; }); muteButton.textContent = isMuted ? "🎵" : "🔇"; }
         // ▼▼▼ PALITAN MO ITONG BUONG FUNCTION ▼▼▼
         function resizeCanvas() {
-    const oldCanvasWidth = canvas.width;
-    const oldCanvasHeight = canvas.height;
-    let chipRatios;
+    const oldCanvasWidth = canvas.width;
+    const oldCanvasHeight = canvas.height;
+    let chipRatios;
 
-    if (!isBreakShot && chips.length > 0 && oldCanvasWidth > 0 && oldCanvasHeight > 0) {
-        chipRatios = chips.map(c => ({ x: c.x / VIRTUAL_WIDTH, y: c.y / VIRTUAL_HEIGHT }));
-    }
+    if (!isBreakShot && chips.length > 0 && oldCanvasWidth > 0 && oldCanvasHeight > 0) {
+        
+        chipRatios = chips.map(c => ({ x: c.x / VIRTUAL_WIDTH, y: c.y / VIRTUAL_HEIGHT }));
+    }
 
-    const containerWidth = window.innerWidth;
-    const containerHeight = window.innerHeight;
-    const screenAspectRatio = containerWidth / containerHeight;
-    const tableFrame = document.getElementById('table-frame');
-    
-    // ▼▼▼ DITO ANG FIX: PALAKIHIN ANG FRAME PAG PC ▼▼▼
-    
-    // Check kung PC/Laptop (Lapad > 1024px)
-    const isBigScreen = window.innerWidth > 1024;
+    const containerWidth = window.innerWidth;
+    const containerHeight = window.innerHeight;
+    const screenAspectRatio = containerWidth / containerHeight;
+    const tableFrame = document.getElementById('table-frame');
+    let frameWidth, frameHeight;
 
-    // Kung PC: 60px (Makapal at Solid tignan)
-    // Kung Mobile: 25px (Sakto lang sa liit ng screen)
-    const framePadding = isBigScreen ? 60 : 25;
-    
-    // I-apply ang kapal
-    tableFrame.style.padding = `${framePadding}px`;
-    
-    // I-adjust din ang kurbada (radius) para hindi magmukhang kahon sa PC
-    tableFrame.style.borderRadius = isBigScreen ? '25px' : '15px';
+    const paddingPercentage = 0.90; 
 
-    // ▲▲▲ END NG FIX ▲▲▲
+    if (screenAspectRatio > TABLE_ASPECT_RATIO) {
+        frameHeight = containerHeight * paddingPercentage; // <-- NILAGYAN NG PADDING
+        frameWidth = frameHeight * TABLE_ASPECT_RATIO;
+    } else {
+        frameWidth = containerWidth * paddingPercentage; // <-- NILAGYAN NG PADDING
+        frameHeight = frameWidth / TABLE_ASPECT_RATIO;
+    }
+    
+    tableFrame.style.width = `${frameWidth}px`;
+    tableFrame.style.height = `${frameHeight}px`;
 
-    let frameWidth, frameHeight;
-    const paddingPercentage = 0.90; 
+    canvas.width = VIRTUAL_WIDTH;
+    canvas.height = VIRTUAL_HEIGHT;
 
-    if (screenAspectRatio > TABLE_ASPECT_RATIO) {
-        frameHeight = containerHeight * paddingPercentage;
-        frameWidth = frameHeight * TABLE_ASPECT_RATIO;
-    } else {
-        frameWidth = containerWidth * paddingPercentage; 
-        frameHeight = frameWidth / TABLE_ASPECT_RATIO;
-    }
-    
-    tableFrame.style.width = `${frameWidth}px`;
-    tableFrame.style.height = `${frameHeight}px`;
+    
+    backgroundCanvas.width = VIRTUAL_WIDTH;
+    backgroundCanvas.height = VIRTUAL_HEIGHT;
 
-    canvas.width = VIRTUAL_WIDTH;
-    canvas.height = VIRTUAL_HEIGHT;
+    table.width = VIRTUAL_WIDTH;
+    table.height = VIRTUAL_HEIGHT;
+   
+    setupHoles();     if (isBreakShot || !chipRatios) {
+        setupChips(); // Gagamit na rin ng scale=1
+    } else if (chipRatios) {
+        chips.forEach((chip, i) => {
+            const radiusConstant = chip.id === 0 ? CUE_BALL_RADIUS : BALL_RADIUS;
+            if (chipRatios[i]) {
+                // I-multiply sa VIRTUAL_WIDTH/HEIGHT
+                chip.x = chipRatios[i].x * VIRTUAL_WIDTH;
+                chip.y = chipRatios[i].y * VIRTUAL_HEIGHT;
+            }
+            
+            chip.radius = radiusConstant; 
+        });
+    }
 
-    backgroundCanvas.width = VIRTUAL_WIDTH;
-    backgroundCanvas.height = VIRTUAL_HEIGHT;
-
-    table.width = VIRTUAL_WIDTH;
-    table.height = VIRTUAL_HEIGHT;
-   
-    setupHoles();     
-    
-    if (isBreakShot || !chipRatios) {
-        setupChips(); 
-    } else if (chipRatios) {
-        chips.forEach((chip, i) => {
-            const radiusConstant = chip.id === 0 ? CUE_BALL_RADIUS : BALL_RADIUS;
-            if (chipRatios[i]) {
-                chip.x = chipRatios[i].x * VIRTUAL_WIDTH;
-                chip.y = chipRatios[i].y * VIRTUAL_HEIGHT;
-            }
-            chip.radius = radiusConstant; 
-        });
-    }
-
-    drawBackgroundLayer();
+    
+    drawBackgroundLayer();
 }
         function setupHoles() { const hr = HOLE_RADIUS * scale; holes = [ { x: 0, y: 0, radius: hr }, { x: canvas.width, y: 0, radius: hr }, { x: 0, y: canvas.height, radius: hr }, { x: canvas.width, y: canvas.height, radius: hr } ]; }
         function setupChips() { chips = []; const newCueChip = { id: 0, value: 0, x: canvas.width * 0.25, y: canvas.height / 2, vx: 0, vy: 0, radius: CUE_BALL_RADIUS * scale, inPlay: true, color: '#1a1a1a', type: 'cue', isPocketing: false, pocketingProgress: 0, pocketingHole: null, rotation: 0, rotationSpeed: 0, currentSideSpin: 0 }; chips.push(newCueChip); const objectChipRadius = BALL_RADIUS * scale; if (gameMode.includes('straight-ball') || gameMode.includes('poker')) { const redChipsSource = []; const blueChipsSource = []; for (let i = 1; i <= 12; i++) { if (i <= 6) { redChipsSource.push({ id: i, color: '#C8102E', type: 'red', value: i }); } else { blueChipsSource.push({ id: i, color: '#0033A0', type: 'blue', value: i }); } } const startX = canvas.width * 0.7; const startY = canvas.height / 2; const colSpacing = objectChipRadius * 2.1; const rowSpacing = objectChipRadius * 1.8; const positions = []; const rows = 4; const cols = 3; const totalHeight = (rows - 1) * rowSpacing; const initialY = startY - totalHeight / 2; for (let row = 0; row < rows; row++) { for (let col = 0; col < cols; col++) { positions.push({ x: startX + col * colSpacing, y: initialY + row * rowSpacing }); } } const chipDataOrder = [ ...redChipsSource, ...blueChipsSource ]; for (let i = 0; i < positions.length; i++) { let chipData = chipDataOrder[i]; if (chipData) { const newObjectChip = { id: chipData.id, value: chipData.value, x: positions[i].x, y: positions[i].y, vx: 0, vy: 0, radius: objectChipRadius, inPlay: true, color: chipData.color, type: chipData.type, isPocketing: false, pocketingProgress: 0, pocketingHole: null, rotation: 0, rotationSpeed: 0 }; chips.push(newObjectChip); } } } else if (gameMode.includes('61-ball')) { const chipColors = [ null, '#FFD700', '#0000FF', '#FF0000', '#800080', '#FFA500', '#008000', '#964B00', '#212121', '#FFC107', '#03A9F4', '#F44336', '#9C27B0', '#FF9800', '#4CAF50', '#795548' ]; let chipIds = Array.from({length: 15}, (_, i) => i + 1); const startX = canvas.width * 0.7; const startY = canvas.height / 2; const rowSpacing = objectChipRadius * 1.8; const rackPositions = []; for (let row = 0; row < 5; row++) { for (let col = 0; col <= row; col++) { rackPositions.push({ x: startX + row * rowSpacing, y: startY + (col * objectChipRadius * 2.1) - (row * objectChipRadius * 1.05) }); } } for (let i = 0; i < 15; i++) { const chipId = chipIds[i]; const newObjectChip = { id: chipId, value: chipId, x: rackPositions[i].x, y: rackPositions[i].y, vx: 0, vy: 0, radius: objectChipRadius, inPlay: true, color: chipColors[chipId], type: 'numbered', isPocketing: false, pocketingProgress: 0, pocketingHole: null, rotation: 0, rotationSpeed: 0 }; chips.push(newObjectChip); } } }
@@ -8814,44 +8938,36 @@ async function handleRematchRequest() {
 }
 
 async function updatePlayerData(uid, didWin = false) {
-    // Tinanggal natin ang check na "!didWin" para ma-save din kapag natalo (bawas trophies)
-    if (!uid) return; 
-    
+    if (!uid || !db) return; 
+
     const playerDocRef = doc(db, "players", uid);
-    
+    const displayName = localStorage.getItem('pinoyPoolPlayerName') || "Anonymous";
+
     try {
-        const playerDoc = await getDoc(playerDocRef);
-        const displayName = localStorage.getItem('pinoyPoolPlayerName') || "Anonymous";
-        
-        // Ito ang mga data na ise-save natin sa server
+        // Ihanda ang lahat ng data na laging dapat updated
         const dataToSave = {
             displayName: displayName,
             searchableName: displayName.toLowerCase(),
-            trophies: playerTrophies, // <-- IMPORTANTE: Save Trophies
-            level: playerLevel,       // Save Level
-            xp: playerXP,             // Save XP
+            trophies: playerTrophies || 0,
+            level: playerLevel || 1,
+            xp: playerXP || 0,
+            coins: playerTotalCurrency || 0,
             lastPlayed: serverTimestamp()
         };
 
-        // Kung nanalo lang tsaka magdadagdag ng "Wins" count
+        // Kung nanalo, idagdag ang increment command sa object
         if (didWin) {
             dataToSave.wins = increment(1);
         }
-        
-        // Kung bago pa lang o nagpalit ng pangalan
-        if (!playerDoc.exists() || playerDoc.data().displayName !== displayName) {
-            await setDoc(playerDocRef, dataToSave, { merge: true });
-        } else {
-            // Kung existing player, update lang ang stats
-            delete dataToSave.displayName; // 'Wag na galawin ang pangalan
-            delete dataToSave.searchableName;
-            await updateDoc(playerDocRef, dataToSave);
-        }
-        
-        console.log("Player stats updated successfully on server.");
-        
+
+        // Isang bagsakan na save gamit ang setDoc + merge.
+        // Gagawa ito ng record kung wala pa, at mag-uupdate lang kung meron na.
+        // HINDI na kailangan ng getDoc o if(playerDoc.exists())
+        await setDoc(playerDocRef, dataToSave, { merge: true });
+
+        console.log("✅ Stats successfully synced to Firestore");
     } catch (error) {
-        console.error("Error updating player data:", error);
+        console.error("❌ Error updating player data:", error);
     }
 }
 
@@ -11121,22 +11237,61 @@ function showColorAssignmentPopup(message, color) {
         popup.remove();
     }, 4000); // Mananatili ng 2.5 segundo
 }
-// ▲▲▲ HANGGANG DITO ANG BAGONG FUNCTION ▲▲▲
-        function signInPlayer() { 
+function signInPlayer() { 
     onAuthStateChanged(auth, (user) => { 
         if (user) { 
             localPlayerUid = user.uid; 
             isAuthReady = true; 
             onlineButton.disabled = false; 
             
-            // onlineButton.textContent = "Online Multiplayer"; // <--- BINURA KO NA ITO! (Ang salarin)
-            
-            // Sa halip na palitan ang lahat, yung SUBTITLE lang ang i-update natin (Optional)
+            // UI Update (Yung gusto mong design)
             const sub = document.querySelector('#online-button .card-subtitle');
             if(sub) {
                 sub.textContent = "Ranked Match • Online";
-                sub.style.color = "#00FF00"; // Gawing Green para alam mong connected
+                sub.style.color = "#00FF00"; 
             }
+
+            // ============================================================
+            // 💰 COIN SYNC LOGIC (BAGONG DAGDAG)
+            // ============================================================
+            const playerDocRef = doc(db, "players", localPlayerUid);
+            
+            getDoc(playerDocRef).then((snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    
+                    // 1. Kunin ang Coins sa Database (Server)
+                    // (Check natin kung 'coins' o 'playerTotalCurrency' ang na-save mo dati)
+                    const serverCoins = data.coins || data.playerTotalCurrency || 0;
+                    
+                    // 2. Kunin ang Coins sa Local Storage (Backup sa Phone)
+                    const localCoins = parseInt(localStorage.getItem('pinoyPoolCurrency') || '0');
+
+                    console.log(`Sync Check: Local(${localCoins}) vs Server(${serverCoins})`);
+
+                    // 3. COMPARE: Masusunod ang MAS MALAKI
+                    if (localCoins > serverCoins) {
+                        // Kung mas malaki ang sa phone (kasi naglaro offline), i-upload sa server
+                        console.log("🔼 Syncing: Uploading Local to Server...");
+                        playerTotalCurrency = localCoins;
+                        updateDoc(playerDocRef, { coins: localCoins }); // Save to DB
+                    } else {
+                        // Kung mas malaki ang sa server (kasi naglaro sa ibang device), i-download sa phone
+                        console.log("🔽 Syncing: Downloading Server to Local...");
+                        playerTotalCurrency = serverCoins;
+                        localStorage.setItem('pinoyPoolCurrency', serverCoins); // Save to Local
+                    }
+                } else {
+                    // New User? Hayaan ang createPlayerDocument ang bahala
+                    console.log("New user detected, creating profile...");
+                }
+                
+                // IMPORTANT: I-update ang display sa taas para makita agad ang coins
+                if (typeof updateCurrencyDisplay === 'function') updateCurrencyDisplay();
+            }).catch((err) => {
+                console.error("Sync Error:", err);
+            });
+            // ============================================================
 
             createPlayerDocument(); 
             startInviteListener(); 
@@ -11145,8 +11300,6 @@ function showColorAssignmentPopup(message, color) {
             signInAnonymously(auth).catch((error) => { 
                 console.error("Sign-in failed:", error); 
                 isAuthReady = false; 
-                
-                // onlineButton.textContent = "Auth Failed"; // <--- BINURA KO RIN ITO
                 onlineButton.disabled = true; 
             }); 
         } 
@@ -11259,15 +11412,9 @@ function showInvitePopup(fromName, gameType, inviteId, inviteData) { // Note: Ad
     modal.classList.add('show');
 }
 
-/**
- * Tinitingnan kung may player document na, kung wala, gagawa ng bago.
- * Ito ang titiyak na lahat ng player ay may 'searchableName' agad.
- */
 async function createPlayerDocument() {
     // Siguraduhin na may UID, database, AT pangalan na bago sumubok magsulat
     if (!localPlayerUid || !db || !localPlayerName || localPlayerName === "Guest") {
-        // Kung wala pa ang isa sa mga 'to, huwag munang ituloy.
-        // Tatawagin ulit 'to mamaya kapag kumpleto na.
         console.log("Waiting for UID and Name before creating player document...");
         return; 
     }
@@ -11275,33 +11422,22 @@ async function createPlayerDocument() {
     const playerDocRef = doc(db, "players", localPlayerUid);
 
     try {
-        const playerDoc = await getDoc(playerDocRef);
+        // Gagamit tayo ng setDoc na may merge: true para siguradong gagana
+        // Gagawa ito ng doc kung wala pa, o mag-a-update lang kung mayroon na.
+        await setDoc(playerDocRef, {
+            displayName: localPlayerName,
+            searchableName: localPlayerName.toLowerCase(),
+            wins: 0,
+            level: playerLevel || 1,
+            xp: playerXP || 0,
+            coins: playerTotalCurrency || 0,
+            equippedCueId: 'default',
+            lastPlayed: serverTimestamp()
+        }, { merge: true });
 
-        if (!playerDoc.exists()) {
-            // --- BAGO PA LANG ANG PLAYER ---
-            // Gagawa tayo ng bagong document para sa kanila
-            console.log("Creating new player document for:", localPlayerName);
-            await setDoc(playerDocRef, {
-                displayName: localPlayerName,
-                searchableName: localPlayerName.toLowerCase(), // ETO NA YUN!
-                wins: 0,
-                level: 1, // Kunin natin sa global variable
-                xp: 0,    // Kunin natin sa global variable
-                equippedCueId: 'default',
-                lastPlayed: serverTimestamp()
-            });
-        } else {
-            // --- BUMALIK NA PLAYER ---
-            // I-update lang natin ang pangalan at searchableName
-            // para kung nag-iba man, updated pa rin.
-            console.log("Player document exists. Updating name...");
-            await updateDoc(playerDocRef, {
-                displayName: localPlayerName,
-                searchableName: localPlayerName.toLowerCase() // ETO NA YUN!
-            });
-        }
+        console.log("✅ Player profile initialized in Firestore");
     } catch (error) {
-        console.error("Error creating or updating player document:", error);
+        console.error("Error initializing player document:", error);
     }
 }
 
@@ -13151,7 +13287,15 @@ function closeDailyRewardModal() {
 
 // Function para i-save ang currency (para reusable)
 function saveCurrency() {
-     localStorage.setItem('pinoyPoolCurrency', playerTotalCurrency.toString());
+    // 1. Save sa Phone (Local Backup - Mabilis)
+    localStorage.setItem('pinoyPoolCurrency', playerTotalCurrency.toString());
+
+    // 2. Save sa Database (Cloud - Para hindi mawala kahit mag-uninstall)
+    if (localPlayerUid && db) {
+        // Tawagin ang updatePlayerData para i-upload ang bagong coin balance
+        updatePlayerData(localPlayerUid); 
+        console.log("Coins synced to Firebase: " + playerTotalCurrency);
+    }
 }
 
 // ▼▼▼ UPDATED LOBBY LOGIC (WITH RANK CARD) ▼▼▼
@@ -14620,35 +14764,127 @@ if (spinBtn) spinBtn.addEventListener('click', startSpin);
         attachSafeCloseListener('settings-close-btn', 'settings-modal');
     });
 
-    // --- 3. SAFE CLOSE LISTENER (Back Button Fix) ---
-    function attachSafeCloseListener(btnId, modalId) {
-        const btn = document.getElementById(btnId);
-        const modal = document.getElementById(modalId);
+// --- FIXED SAFE CLOSE LISTENER ---
+function attachSafeCloseListener(btnId, modalId) {
+    const btn = document.getElementById(btnId);
+    const modal = document.getElementById(modalId);
 
-        if (btn) {
-            // Tanggalin ang lumang listener para iwas conflict
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
+    // Gamitin ang global 'tg' variable kung meron, kung wala, kunin sa window
+    const telegramApp = window.Telegram.WebApp;
 
-            newBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Play sound kung available
-                if (typeof playButtonSound === 'function') playButtonSound();
+    if (btn) {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
 
-                // Itaas ang Flag para alam ng system na safe ito
-                if (window) window.isClosingModal = true; 
-                if (typeof gameState !== 'undefined') gameState = 'modal_open'; 
+        newBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (typeof playButtonSound === 'function') playButtonSound();
 
-                if (modal) modal.classList.remove('show');
-                
-                // Trigger Back
-                history.back();
-            });
-        }
+            // 1. Isara ang Modal
+            if (modal) modal.classList.remove('show');
+            
+            // 2. Ibalik sa 'Lobby' state
+            if (typeof gameState !== 'undefined') gameState = 'lobby';
+
+            // 3. Telegram Back Button Handling
+            if (telegramApp && telegramApp.BackButton && telegramApp.BackButton.isVisible) {
+                telegramApp.BackButton.hide();
+            }
+        });
+    }
+}
+
+    // ==========================================
+// 💰 ADSGRAM: WATCH AD TO EARN COINS
+// ==========================================
+
+// Palitan ito ng iyong Block ID galing sa Adsgram.ai
+const ADSGRAM_BLOCK_ID = "YOUR_BLOCK_ID_HERE"; // <--- PALITAN MO ITO
+
+function showAdReward() {
+    if (typeof window.Adsgram === 'undefined') {
+        console.error("Adsgram script not loaded!");
+        return;
     }
 
+    const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+
+    AdController.show().then((result) => {
+        // ✅ SUCCESS: Tinapos ang video
+        console.log('Reward earned: ' + JSON.stringify(result));
+        
+        // Dagdag 500 Coins
+        playerTotalCurrency += 500;
+        saveCurrency();
+        updateCurrencyDisplay();
+        
+        // Ipakita ang Success Popup
+        showRewardPopup(500, "Ad Watched!");
+        triggerFireworks();
+        
+    }).catch((result) => {
+        // ❌ FAILED
+        console.log('Ad skipped or error: ' + JSON.stringify(result));
+        showMessage("Ad skipped. No reward.", 2000);
+    });
+}
+
+// ==========================================
+// 💎 TON CONNECT & SAVE TO FIREBASE (FIXED)
+// ==========================================
+
+const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: 'https://arnoldtasipit66-wq.github.io/my-game-assets/tonconnect-manifest.json', 
+    buttonRootId: 'ton-connect-button'
+});
+
+tonConnectUI.onStatusChange(async (wallet) => {
+    if (wallet && wallet.account.address) {
+        const rawAddress = wallet.account.address;
+        console.log("Wallet Connected:", rawAddress);
+        
+        // --- TIMING FIX ---
+        // Sa halip na setTimeout, gagamit tayo ng loop para hintayin ang localPlayerUid
+        const waitForAuth = setInterval(() => {
+            if (localPlayerUid && db) {
+                clearInterval(waitForAuth); // Stop na ang pag-aantay
+                saveWalletToDb(rawAddress);
+            } else {
+                console.log("Waiting for Firebase login...");
+            }
+        }, 1000); // Mag-check bawat 1 segundo
+
+        // Proteksyon para hindi mag-loop forever (stop after 10 seconds)
+        setTimeout(() => clearInterval(waitForAuth), 10000);
+    }
+});
+
+function saveWalletToDb(address) {
+    if (!localPlayerUid || !db) {
+        showMessage("❌ Please log in first", 3000);
+        return;
+    }
+    
+    showMessage("Saving Wallet... ⏳", 2000);
+    
+    const playerRef = doc(db, "players", localPlayerUid);
+    
+    // Ginamitan ng setDoc + merge para gumana kahit wala pang record sa database
+    setDoc(playerRef, {
+        walletAddress: address,
+        lastWalletUpdate: serverTimestamp()
+    }, { merge: true })
+    .then(() => {
+        showMessage("✅ Wallet Linked to DB!", 3000);
+        console.log("Wallet address saved successfully.");
+    })
+    .catch((err) => {
+        console.error("Wallet Save Error:", err);
+        showMessage("❌ Save Failed: Check Rules", 3000);
+    });
+}
 </script>
 
 </body>
