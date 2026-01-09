@@ -1800,11 +1800,12 @@ background-image: url('https://i.imgur.com/Wg3y3Zn.jpeg');
     .dock-label { font-size: 0.6em !important; }
 }
 
-/* 1. BASE STYLE: Dito natin ilalagay ang transition para smooth ang paglaki */
 #player-info, #opponent-info {
     position: absolute;
     top: 0px !important;
+    
     height: 28px !important; 
+    
     width: auto !important;
     min-width: auto !important;
     max-width: 200px !important;
@@ -1820,14 +1821,11 @@ background-image: url('https://i.imgur.com/Wg3y3Zn.jpeg');
     
     color: white !important;
     font-family: 'Nunito', sans-serif !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4) !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4) !important; /* Pinaliit shadow */
     z-index: 20 !important;
     
     pointer-events: auto !important;
     cursor: pointer !important;
-
-    /* IDAGDAG ITO: Transition para hindi biglaang pitik ang paglaki */
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease !important;
 }
 
 
@@ -4260,14 +4258,14 @@ input:checked + .slider:before {
     }
 }
 
-/* 2. ACTIVE PLAYER: Steady na malaki (Wala nang breathing animation) */
+/* 2. I-APPLY SA ACTIVE PLAYER (Gamit ang ID+Class para pinaka-malakas) */
 div#player-info.hud-active, 
 div#opponent-info.hud-active {
-    /* Pilitin nating ipakita */
+    /* Pilitin nating ipakita (Override any hidden opacity) */
     opacity: 1 !important;
     z-index: 999 !important;
     
-    /* Pilitin ang GOLD Border */
+    /* Pilitin ang GOLD Border (Tatalunin nito ang lumang white border) */
     border: 2px solid #FFD700 !important; 
     
     /* Gawing Solid ang Background para litaw */
@@ -4276,12 +4274,8 @@ div#opponent-info.hud-active {
     /* Pilitin ang Initial Glow */
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.6) !important;
     
-    /* --- STOP LAG FIX --- */
-    /* 1. Tanggalin ang animation */
-    animation: none !important; 
-
-    /* 2. Steady na paglaki (Scale Up) */
-    transform: scale(1.15) !important;
+    /* PAGANAHIN ANG ANIMATION */
+    animation: superBreathing 1.5s infinite ease-in-out !important;
 }
 
 /* === PRELOADER STYLES === */
@@ -5059,6 +5053,84 @@ div#opponent-info.hud-active {
         right: 10px !important;
     }
 }
+
+/* --- CLEAN ELITE SIDEBAR (4-BUTTON SETUP) --- */
+
+/* 1. Main Anchor (5% distansya sa gilid ng screen) */
+#exit-button, 
+#main-settings-btn, 
+#utility-controls-container, 
+#pektus-control {
+    left: 5% !important; 
+    right: auto !important;
+    position: absolute !important;
+    width: 50px !important; /* Standard width para sa lahat */
+    margin: 0 !important;
+    transform: none !important;
+    z-index: 99999 !important;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4) !important;
+}
+
+/* 2. Perfect Vertical Spacing (Settings -> Shop -> Pektus -> Exit) */
+
+/* SETTINGS */
+#main-settings-btn {
+    top: calc(50% - 105px) !important;
+    height: 50px !important;
+    background: linear-gradient(135deg, #6200ea, #311b92) !important;
+    border: 2px solid #D500F9 !important;
+    border-radius: 14px !important;
+    display: flex !important; align-items: center; justify-content: center;
+}
+
+/* SHOP */
+#utility-controls-container {
+    top: calc(50% - 45px) !important;
+    border: none !important; box-shadow: none !important; background: none !important;
+}
+#ingame-shop-button {
+    width: 50px !important; height: 50px !important;
+    background: linear-gradient(135deg, #FFD700, #B8860B) !important;
+    border: 2px solid #FFF !important;
+    border-radius: 14px !important;
+    display: flex !important; align-items: center; justify-content: center;
+}
+
+/* PEKTUS */
+#pektus-control {
+    top: calc(50% + 15px) !important;
+    height: 24px !important;
+    background: #1a1a1a !important;
+    border: 2px solid #FFD700 !important;
+    border-radius: 6px !important;
+}
+
+/* EXIT */
+#exit-button {
+    top: calc(50% + 50px) !important;
+    height: 40px !important;
+    background: linear-gradient(135deg, #e53935, #b71c1c) !important;
+    border: 2px solid #ff5252 !important;
+    border-radius: 14px !important;
+    color: white !important; font-weight: 900 !important; font-size: 11px !important;
+    display: flex !important; align-items: center; justify-content: center;
+}
+
+/* Icons Styling */
+.sidebar-icon {
+    width: 28px; height: 28px; fill: white;
+}
+
+/* Power Bar Alignment (Right Balance) */
+#power-control {
+    right: 5% !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    border: 2px solid rgba(255, 215, 0, 0.4) !important;
+    border-radius: 25px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+}
         
 </style>
 </head>
@@ -5125,15 +5197,11 @@ div#opponent-info.hud-active {
         </button>
 
     
-        <button id="ingame-shop-button" class="ui-button icon-button" title="Open Shop" style="background-color: #8E2DE2;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style="color: white;">
-                <path d="M11.354 6.354a.5.5 0 0 0-.708-.708L8 8.293 6.854 7.146a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/>
-                <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1H.5zm3.915 10L3.102 4h10.796l-1.313 7h-8.17zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-            </svg>
-        </button>
-      
-
-        
+        <button id="ingame-shop-button" class="ui-button icon-button">
+    <svg class="sidebar-icon" viewBox="0 0 24 24" style="fill: #000;">
+        <path d="M12,13A5,5 0 0,1 7,8H9A3,3 0 0,0 12,11A3,3 0 0,0 15,8H17A5,5 0 0,1 12,13M12,3A3,3 0 0,1 15,6H9A3,3 0 0,1 12,3M19,6H17V6A5,5 0 0,0 12,1A5,5 0 0,0 7,6V6H5C3.89,6 3,6.89 3,8V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V8C21,6.89 20.11,6 19,6Z" />
+    </svg>
+</button>
         
         
         <button id="fullscreen-button" class="ui-button icon-button" title="Toggle Fullscreen">
@@ -5634,8 +5702,10 @@ div#opponent-info.hud-active {
     <audio id="lose-sfx" src="https://arnoldtasipit66-wq.github.io/my-game-assets/lose.mp3" crossorigin="anonymous"></audio>
 
 
-<button id="main-settings-btn" class="ui-button icon-button" style="background-color: #6200ea;">
-    ⚙️
+<button id="main-settings-btn" class="ui-button icon-button">
+    <svg class="sidebar-icon" viewBox="0 0 24 24">
+        <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.35 19.43,11.03L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.65 15.47,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.53,5.32 7.96,5.65 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11.03C4.53,11.35 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.04 4.95,18.95L7.44,17.95C7.96,18.35 8.53,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.47,18.68 16.04,18.35 16.56,17.95L19.05,18.95C19.27,19.04 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+    </svg>
 </button>
 
     <div id="full-image-modal" class="modal-overlay" style="background-color: rgba(0,0,0,0.95) !important; z-index: 20000;">
@@ -5965,9 +6035,9 @@ ghostHand = document.getElementById('ghost-hand'),
               
               
               CUE_CHIP_MASS = 3.5,     // Bigat ng Cue Chip (mas mabigat)
-              OBJECT_CHIP_MASS = 1.5,  // Bigat ng Object Chip (mas magaan)
+              OBJECT_CHIP_MASS = 2.5,  // Bigat ng Object Chip (mas magaan)
               
-              COLLISION_FRICTION = 0.5, // 0 = Walang preno sa banggaan, 1 = Sobrang preno
+              COLLISION_FRICTION = 0.8, // 0 = Walang preno sa banggaan, 1 = Sobrang preno
        
               FRICTION_PER_SECOND = 0.3, // <-- ITO ANG PALIT SA 'FRICTION'
               MIN_VELOCITY = 5.0, // <-- ITO ANG PALIT SA 'MIN_VELOCITY'
@@ -7569,7 +7639,7 @@ function drawChips() {
             const pulse = Math.abs(Math.sin(performance.now() * 0.004));
             const alpha = pulse * 0.7 + 0.3;
             const ringWidth = 2.5 * scale;
-            const glowRadius = 0 * scale;
+            const glowRadius = 7 * scale;
             const ringColor = `rgba(255, 255, 0, ${alpha})`;
             const glowColor = `rgba(255, 255, 0, ${alpha * 0.7})`;
 
@@ -7831,7 +7901,7 @@ function drawGuidelines() {
  // START: SPINNING CHIP UPDATE (With Fixed AI Cheat)
 function updateChipPositions(dt_sec) { 
     // Gaano kaliit ang bawat substep
-    const subSteps = 8; 
+    const subSteps = 20; 
     const dt_sub = dt_sec / subSteps; // Oras bawat substep
 
     for (let i = 0; i < subSteps; i++) { 
