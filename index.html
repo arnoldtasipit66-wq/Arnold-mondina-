@@ -7356,6 +7356,19 @@ function draw() {
     // (Pinalitan nito ang dating ctx.clearRect at drawTable)
     ctx.drawImage(backgroundCanvas, 0, 0);
 
+        // --- VIGNETTE EFFECT START ---
+    const vignette = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.3, 
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.9 
+    );
+    vignette.addColorStop(0, "rgba(255, 255, 255, 0.05)"); // Highlight sa gitna
+    vignette.addColorStop(0.6, "rgba(0, 0, 0, 0)");       // Transition
+    vignette.addColorStop(1, "rgba(0, 0, 0, 0.6)");        // Shadow sa gilid
+
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // --- VIGNETTE EFFECT END ---
+
     // 2. I-drawing ang mga bagay na gumagalaw (Walang babaguhin dito)
     drawChips(); 
     
