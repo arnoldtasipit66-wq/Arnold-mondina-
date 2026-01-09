@@ -7356,7 +7356,11 @@ function draw() {
     // (Pinalitan nito ang dating ctx.clearRect at drawTable)
     ctx.drawImage(backgroundCanvas, 0, 0);
 
-        // --- VIGNETTE EFFECT (UNIVERSAL FIX) ---
+        
+    // 2. I-drawing ang mga bagay na gumagalaw (Walang babaguhin dito)
+    drawChips(); 
+
+    // --- VIGNETTE EFFECT (UNIVERSAL FIX) ---
     // Gamitin ang canvas dimensions para laging sentro sa game world
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
@@ -7382,8 +7386,6 @@ function draw() {
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     // --- END VIGNETTE ---
-    // 2. I-drawing ang mga bagay na gumagalaw (Walang babaguhin dito)
-    drawChips(); 
     
     const isMyTurn = isOnlineGame ? isMyTurnOnline : playerTurn; 
     if (isMyTurn && gameState === 'aiming' && !isTutorialActive) { 
