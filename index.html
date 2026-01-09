@@ -7356,19 +7356,32 @@ function draw() {
     // (Pinalitan nito ang dating ctx.clearRect at drawTable)
     ctx.drawImage(backgroundCanvas, 0, 0);
 
-        // --- VIGNETTE EFFECT START ---
-    const vignette = ctx.createRadialGradient(
-        canvas.width / 2, canvas.height / 2, canvas.width * 0.3, 
-        canvas.width / 2, canvas.height / 2, canvas.width * 0.9 
-    );
-    vignette.addColorStop(0, "rgba(255, 255, 255, 0.05)"); // Highlight sa gitna
-    vignette.addColorStop(0.6, "rgba(0, 0, 0, 0)");       // Transition
-    vignette.addColorStop(1, "rgba(0, 0, 0, 0.6)");        // Shadow sa gilid
+        // --- VIGNETTE EFFECT (UNIVERSAL FIX) ---
+    // Gamitin ang canvas dimensions para laging sentro sa game world
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
 
+    // TRICK: Sa landscape, gusto natin na ang liwanag ay hindi sobrang laki.
+    // Kaya ibabase natin ang "Inner Light" sa Height (mas maikli) para focused sa gitna.
+    // Ang "Outer Shadow" naman ay ibabase sa Width (mas mahaba) para umabot sa kanto.
+    
+    // Radius ng Liwanag (Center)
+    const rInner = canvas.height * 0.3; 
+    
+    // Radius ng Shadow (Edges) - Gumamit ng Math.max para safe sa portrait/landscape
+    const rOuter = Math.max(canvas.width, canvas.height) * 0.8;
+
+    const vignette = ctx.createRadialGradient(cx, cy, rInner, cx, cy, rOuter);
+
+    // Color Steps
+    vignette.addColorStop(0, "rgba(255, 255, 255, 0.1)");  // Kintab sa gitna (Dagdagan mo kung gusto mo mas shiny)
+    vignette.addColorStop(0.5, "rgba(0, 0, 0, 0)");       // Transition (Clear part)
+    vignette.addColorStop(1, "rgba(0, 0, 0, 0.7)");        // Shadow sa gilid
+
+    // Drawing
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // --- VIGNETTE EFFECT END ---
-
+    // --- END VIGNETTE ---
     // 2. I-drawing ang mga bagay na gumagalaw (Walang babaguhin dito)
     drawChips(); 
     
@@ -13806,7 +13819,7 @@ function openPrivateChat(friendUid, friendName) {
     
     // I-save kung sino ang ka-chat
     currentChatFriendUid = friendUid;
-clearChatNotification(friendUid);
+    clearChatNotification(friendUid);
     
     // Ipakita ang Modal
     const modal = document.getElementById('private-chat-modal');
@@ -13815,12 +13828,23 @@ clearChatNotification(friendUid);
     
     title.textContent = friendName;
     modal.classList.add('show');
+
+    // ▼▼▼ DAGDAG: HISTORY FIX PARA HINDI MAG-EXIT ANG GAME ▼▼▼
+    history.pushState({ modal: 'privateChatModal' }, 'Chat', '#chat'); 
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
     historyDiv.innerHTML = '<div style="text-align: center; opacity: 0.5; margin-top: 20px;">Loading conversation...</div>';
     
     // Simulan ang pakikinig sa messages
     listenToPrivateChat(friendUid);
-}
 
+    // ▼▼▼ DAGDAG: SAFE CLOSE BUTTON (Para mag-sync sa Back Button) ▼▼▼
+    // Siguraduhing may function ka na `attachSafeCloseListener` sa baba ng code mo
+    if (typeof attachSafeCloseListener === 'function') {
+        attachSafeCloseListener('private-chat-close', 'private-chat-modal');
+    }
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+}
 // 3. Listener: Makinig sa mga bagong messages
 function listenToPrivateChat(friendUid) {
     if (currentChatUnsubscribe) currentChatUnsubscribe(); // Stop previous listener
@@ -14663,9 +14687,28 @@ if (spinBtn) spinBtn.addEventListener('click', startSpin);
             };
         }
 
-        // Activate Safe Listeners for Profile & Settings
-        attachSafeCloseListener('profile-close-btn', 'profile-modal');
-        attachSafeCloseListener('settings-close-btn', 'settings-modal');
+        // --- IDAGDAG MO ITO DITO ---
+        
+        // Listahan ng mga buttons na aayusin natin
+        const modalsToFix = [
+            { btnId: 'ai-menu-close-btn', modalId: 'ai-menu' },
+            { btnId: 'online-select-close-btn', modalId: 'online-game-select' },
+            { btnId: 'online-menu-close-btn', modalId: 'online-menu' },
+            { btnId: 'shop-close-btn', modalId: 'shop-modal' },
+            { btnId: 'daily-reward-close-btn', modalId: 'daily-reward-modal' },
+            { btnId: 'full-image-close-btn', modalId: 'full-image-modal' },
+            { btnId: 'leaderboard-close-btn', modalId: 'leaderboard-modal' },
+            { btnId: 'private-chat-close', modalId: 'private-chat-modal' } // Sinama ko na rin chat dito
+        ];
+
+        // I-activate ang safe close sa kanilang lahat
+        modalsToFix.forEach(item => {
+            if (document.getElementById(item.btnId)) {
+                attachSafeCloseListener(item.btnId, item.modalId);
+            }
+        });
+        
+        // --- TAPOS NA ANG DAGDAG ---
     });
 
     // --- 3. SAFE CLOSE LISTENER (Back Button Fix) ---
