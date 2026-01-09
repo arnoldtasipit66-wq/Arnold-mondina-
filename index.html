@@ -1802,7 +1802,7 @@ background-image: url('https://i.imgur.com/Wg3y3Zn.jpeg');
 
 #player-info, #opponent-info {
     position: absolute;
-    top: 0px !important;
+    top: 10px !important;
     
     height: 28px !important; 
     
@@ -1826,6 +1826,7 @@ background-image: url('https://i.imgur.com/Wg3y3Zn.jpeg');
     
     pointer-events: auto !important;
     cursor: pointer !important;
+    transition: transform 0.3s ease-out;
 }
 
 
@@ -1888,10 +1889,9 @@ background-image: url('https://i.imgur.com/Wg3y3Zn.jpeg');
 
 
 @media (max-height: 500px) and (orientation: landscape) {
-    #player-info { left: 130px !important; top: 0px !important; }
-    #opponent-info { right: 130px !important; top: 0px !important; }
+    #player-info { left: 130px !important; top: 10px !important; }
+    #opponent-info { right: 130px !important; top: 10px !important; }
 }
-
 .flying-coin-particle {
     position: fixed;
     font-size: 24px; /* Laki ng coin */
@@ -4259,6 +4259,7 @@ input:checked + .slider:before {
 }
 
 /* 2. I-APPLY SA ACTIVE PLAYER (Gamit ang ID+Class para pinaka-malakas) */
+/* 2. I-APPLY SA ACTIVE PLAYER (Gamit ang ID+Class para pinaka-malakas) */
 div#player-info.hud-active, 
 div#opponent-info.hud-active {
     /* Pilitin nating ipakita (Override any hidden opacity) */
@@ -4274,10 +4275,14 @@ div#opponent-info.hud-active {
     /* Pilitin ang Initial Glow */
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.6) !important;
     
-    /* PAGANAHIN ANG ANIMATION */
-    animation: superBreathing 1.5s infinite ease-in-out !important;
-}
+    /* --- DITO ANG PAGBABAGO PARA IWAS LAG --- */
+    
+    /* Tanggalin ang breathing animation */
+    animation: none !important; 
 
+    /* Palitan ng Fixed na Paglaki (Steady lang na malaki) */
+    transform: scale(1.15) !important;
+}
 /* === PRELOADER STYLES === */
 #preloader-overlay {
     position: fixed;
@@ -5911,47 +5916,47 @@ const SHOP_ITEMS = {
     ],
 
     felts: [
-        { 
-            id: 'default', 
-            name: 'Honey Gold (Default)', 
-            price: 0, 
-            imageSrc: 'https://i.imgur.com/T9ft7vz.jpeg', 
-            tint: 'rgba(200, 150, 70, 0.85)', 
-            type: 'felt', 
-            minLevel: 1 
-        },
+    { 
+        id: 'default', 
+        name: 'Custom Felt', 
+        price: 0, 
+        imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_jsh1arjsh1arjsh1.png', 
+        tint: null, // Ginawang null para hindi mag-iba ang kulay
+        type: 'felt', 
+        minLevel: 1 
+    },
         { 
             id: 'felt_royal_blue', 
-            name: 'Royal Blue', 
+            name: 'Khaki wood', 
             price: 5000, 
-            imageSrc: 'https://i.imgur.com/1gi4wfu.jpeg', 
+            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/Arnold-mondina-/refs/heads/main/1767971484397.jpg', 
             tint: null, 
             type: 'felt', 
             minLevel: 5 
         },
         { 
             id: 'felt_emerald', 
-            name: 'Emerald Green', 
+            name: 'Choco Wood', 
             price: 12000, 
-            imageSrc: 'https://i.imgur.com/M6uJUgu.jpeg', 
+            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/Arnold-mondina-/refs/heads/main/Gemini_Generated_Image_g5swlng5swlng5sw.png', 
             tint: null, 
             type: 'felt', 
             minLevel: 12 
         },
         { 
             id: 'felt_casino_red', 
-            name: 'Casino Red', 
+            name: 'Emerald Green', 
             price: 25000, 
-            imageSrc: 'https://i.imgur.com/QIjNgNP.jpeg', 
+            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_jrbirnjrbirnjrbi.png', 
             tint: null, 
             type: 'felt', 
             minLevel: 22 
         },
         { 
             id: 'felt_midnight_black', 
-            name: 'Midnight Black', 
+            name: 'Ocean Wood', 
             price: 60000, 
-            imageSrc: 'https://i.imgur.com/FzM3c96.jpeg', 
+            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_vqmrpzvqmrpzvqmr.png', 
             tint: null, 
             type: 'felt', 
             minLevel: 40 
@@ -6034,12 +6039,12 @@ ghostHand = document.getElementById('ghost-hand'),
               HOLE_RADIUS = 35,    // <-- Pinalitan galing 35
               
               
-              CUE_CHIP_MASS = 3.5,     // Bigat ng Cue Chip (mas mabigat)
+              CUE_CHIP_MASS = 6.5,     // Bigat ng Cue Chip (mas mabigat)
               OBJECT_CHIP_MASS = 2.5,  // Bigat ng Object Chip (mas magaan)
               
-              COLLISION_FRICTION = 0.8, // 0 = Walang preno sa banggaan, 1 = Sobrang preno
+              COLLISION_FRICTION = 1, // 0 = Walang preno sa banggaan, 1 = Sobrang preno
        
-              FRICTION_PER_SECOND = 0.3, // <-- ITO ANG PALIT SA 'FRICTION'
+              FRICTION_PER_SECOND = 0.2, // <-- ITO ANG PALIT SA 'FRICTION'
               MIN_VELOCITY = 5.0, // <-- ITO ANG PALIT SA 'MIN_VELOCITY'
               MIN_ROTATION_SPEED = 0.01, 
               ROTATION_SPEED = 0.001,
@@ -6070,9 +6075,8 @@ let fireworks = [];
         cueStickImage.src = 'https://i.imgur.com/FYXWKhr.png';
 const feltTextureImage = new Image();
 const tableSurfaceImage = new Image();
-    tableSurfaceImage.crossOrigin = "Anonymous";
-    tableSurfaceImage.src = 'https://i.imgur.com/T9ft7vz.jpeg'; // Siguraduhing ito ang link
-
+tableSurfaceImage.crossOrigin = "Anonymous";
+tableSurfaceImage.src = 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_jsh1arjsh1arjsh1.png';
         let unsubscribeFromChat, isInitialChatLoad = true;
         let legalTargetChipIds = new Set(); // <-- BAGONG DAGDAG para sa ring light
 
@@ -7383,7 +7387,7 @@ function toggleMusic() { const isMuted = backgroundPlaylist[0].muted; background
     const tableFrame = document.getElementById('table-frame');
     let frameWidth, frameHeight;
 
-    const paddingPercentage = 0.90; 
+    const paddingPercentage = 0.85; 
 
     if (screenAspectRatio > TABLE_ASPECT_RATIO) {
         frameHeight = containerHeight * paddingPercentage; // <-- NILAGYAN NG PADDING
@@ -7639,7 +7643,7 @@ function drawChips() {
             const pulse = Math.abs(Math.sin(performance.now() * 0.004));
             const alpha = pulse * 0.7 + 0.3;
             const ringWidth = 2.5 * scale;
-            const glowRadius = 7 * scale;
+            const glowRadius = 0 * scale;
             const ringColor = `rgba(255, 255, 0, ${alpha})`;
             const glowColor = `rgba(255, 255, 0, ${alpha * 0.7})`;
 
@@ -7901,7 +7905,7 @@ function drawGuidelines() {
  // START: SPINNING CHIP UPDATE (With Fixed AI Cheat)
 function updateChipPositions(dt_sec) { 
     // Gaano kaliit ang bawat substep
-    const subSteps = 20; 
+    const subSteps = 8; 
     const dt_sub = dt_sec / subSteps; // Oras bawat substep
 
     for (let i = 0; i < subSteps; i++) { 
@@ -12049,8 +12053,12 @@ function findBestBankShot(cueChip, legalTargets) {
             });
         }
         if (!apexBall) apexBall = { x: canvas.width * 0.7, y: canvas.height / 2 };
-        const breakAngle = Math.atan2(apexBall.y - cueChip.y, apexBall.x - cueChip.x);
-        animateAiAiming(breakAngle, 1.0, { DURATION_ALIGN: 1000, DURATION_FEATHER: 1000 }, { x: 0, y: -0.5 });
+        // Magdagdag ng kaunting "Random Error" sa angle (-0.05 hanggang +0.05 radians)
+// Para hindi laging saktong gitna ang tama ng sargo
+const randomError = (Math.random() - 0.5) * 0.1; 
+const breakAngle = Math.atan2(apexBall.y - cueChip.y, apexBall.x - cueChip.x) + randomError;
+
+animateAiAiming(breakAngle, 1.0, { DURATION_ALIGN: 1000, DURATION_FEATHER: 1000 }, { x: 0, y: -0.5 });
         return;
     }
 
@@ -12342,12 +12350,15 @@ function placeCueChipForAI() {
 
     // 1. BREAK SHOT (Head String - Keep as is)
     if (isBreakShot) {
-        const breakLineX = canvas.width * 0.25; 
-        const offsetFromCenter = canvas.height * 0.1; 
-        const headsOrTails = Math.random(); 
-        targetX = breakLineX; 
-        targetY = (headsOrTails < 0.5) ? (canvas.height / 2) + offsetFromCenter : (canvas.height / 2) - offsetFromCenter; 
-    } 
+    // Mananatili ang X sa headstring (1/4 ng mesa)
+    targetX = canvas.width * 0.25;
+
+    // RANDOM Y: Kukuha tayo ng random spot sa pagitan ng 20% hanggang 80% ng taas ng mesa.
+    // Sa paraang ito, hindi na lang dalawang pwesto ang pagpipilian niya.
+    const minY = canvas.height * 0.2;
+    const maxY = canvas.height * 0.8;
+    targetY = Math.random() * (maxY - minY) + minY;
+} 
     
     // 2. BALL IN HAND (Anywhere)
     else {
@@ -14126,11 +14137,10 @@ const assetsToLoad = [
 
     // 2. Static Images
     'https://i.imgur.com/Wg3y3Zn.jpeg', // Background Floor
-    'https://i.imgur.com/T9ft7vz.jpeg', // Wood Texture
-    'https://i.imgur.com/yCvO16j.png',  // Ghost Hand
-    'https://i.imgur.com/FYXWKhr.png',  // Default Cue Stick
+    'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_jsh1arjsh1arjsh1.png', // Wood Texture (UPDATED)
+    'https://i.imgur.com/yCvO16j.png', // Ghost Hand
+    'https://i.imgur.com/FYXWKhr.png', // Default Cue Stick
 ];
-
 // 3. Dynamic Images (Galing sa Shop Items)
 // Kinukuha natin lahat ng imageSrc mula sa SHOP_ITEMS object mo
 if (typeof SHOP_ITEMS !== 'undefined') {
