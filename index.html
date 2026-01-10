@@ -5229,9 +5229,7 @@ div#opponent-info.hud-active {
         <div id="non-interactive-overlay">
     
     <div id="currency-display" class="info-box">
-    💰 <span class="coin-balance-display">0</span>
-</div>
-
+    <span style="color: #FFD700; font-weight: bold;">$PPM:</span> <span class="coin-balance-display">0</span>
 <div id="xp-container" style="position: absolute; bottom: 5px; left: 5px; background-color: var(--dark-bg); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; 
     
     padding: 3px 5px; /* <--- GINAWA KONG 3px (taas/baba) at 5px (kaliwa/kanan) */
@@ -5920,16 +5918,16 @@ const SHOP_ITEMS = {
         id: 'default', 
         name: 'Custom Felt', 
         price: 0, 
-        imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_jsh1arjsh1arjsh1.png', 
+        imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_qtberbqtberbqtbe.png', 
         tint: null, // Ginawang null para hindi mag-iba ang kulay
         type: 'felt', 
         minLevel: 1 
     },
         { 
             id: 'felt_royal_blue', 
-            name: 'Khaki wood', 
+            name: 'Lime Wood', 
             price: 5000, 
-            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/Arnold-mondina-/refs/heads/main/1767971484397.jpg', 
+            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/1768026422319.jpg', 
             tint: null, 
             type: 'felt', 
             minLevel: 5 
@@ -5947,7 +5945,7 @@ const SHOP_ITEMS = {
             id: 'felt_casino_red', 
             name: 'Emerald Green', 
             price: 25000, 
-            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_jrbirnjrbirnjrbi.png', 
+            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_nbbmfhnbbmfhnbbm.png', 
             tint: null, 
             type: 'felt', 
             minLevel: 22 
@@ -5956,7 +5954,7 @@ const SHOP_ITEMS = {
             id: 'felt_midnight_black', 
             name: 'Ocean Wood', 
             price: 60000, 
-            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_vqmrpzvqmrpzvqmr.png', 
+            imageSrc: 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_653i2m653i2m653i.png', 
             tint: null, 
             type: 'felt', 
             minLevel: 40 
@@ -6076,7 +6074,7 @@ let fireworks = [];
 const feltTextureImage = new Image();
 const tableSurfaceImage = new Image();
 tableSurfaceImage.crossOrigin = "Anonymous";
-tableSurfaceImage.src = 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_jsh1arjsh1arjsh1.png';
+tableSurfaceImage.src = 'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_qtberbqtberbqtbe.pngng';
         let unsubscribeFromChat, isInitialChatLoad = true;
         let legalTargetChipIds = new Set(); // <-- BAGONG DAGDAG para sa ring light
 
@@ -7356,11 +7354,7 @@ function draw() {
     // (Pinalitan nito ang dating ctx.clearRect at drawTable)
     ctx.drawImage(backgroundCanvas, 0, 0);
 
-        
-    // 2. I-drawing ang mga bagay na gumagalaw (Walang babaguhin dito)
-    drawChips(); 
-
-    // --- VIGNETTE EFFECT (UNIVERSAL FIX) ---
+        // --- VIGNETTE EFFECT (UNIVERSAL FIX) ---
     // Gamitin ang canvas dimensions para laging sentro sa game world
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
@@ -7370,7 +7364,7 @@ function draw() {
     // Ang "Outer Shadow" naman ay ibabase sa Width (mas mahaba) para umabot sa kanto.
     
     // Radius ng Liwanag (Center)
-    const rInner = canvas.height * 0.15; 
+    const rInner = canvas.height * 0.0; 
     
     // Radius ng Shadow (Edges) - Gumamit ng Math.max para safe sa portrait/landscape
     const rOuter = Math.max(canvas.width, canvas.height) * 0.8;
@@ -7380,12 +7374,14 @@ function draw() {
     // Color Steps
     vignette.addColorStop(0, "rgba(255, 255, 255, 0.1)");  // Kintab sa gitna (Dagdagan mo kung gusto mo mas shiny)
     vignette.addColorStop(0.5, "rgba(0, 0, 0, 0)");       // Transition (Clear part)
-    vignette.addColorStop(1, "rgba(0, 0, 0, 0.95)");        // Shadow sa gilid
+    vignette.addColorStop(1, "rgba(0, 0, 0, 0.9)");        // Shadow sa gilid
 
     // Drawing
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     // --- END VIGNETTE ---
+    // 2. I-drawing ang mga bagay na gumagalaw (Walang babaguhin dito)
+    drawChips(); 
     
     const isMyTurn = isOnlineGame ? isMyTurnOnline : playerTurn; 
     if (isMyTurn && gameState === 'aiming' && !isTutorialActive) { 
@@ -8290,10 +8286,15 @@ async function handle61BallTurnEnd() {
                 if(typeof currentCombo !== 'undefined') { currentCombo++; showComboPopup(currentCombo); }
                 
                 const reward = pocketedObjectChips.length * REWARD_PER_BALL;
-                playerTotalCurrency += reward;
-                showRewardPopup(reward);
-                updateCurrencyDisplay();
-                gainXP(pocketedObjectChips.length * XP_PER_BALL);
+playerTotalCurrency += reward;
+
+// 👇 DITO MO ILAGAY (Para save agad sa database)
+if (window.savePPM) window.savePPM(); 
+// 👆 
+
+showRewardPopup(reward);
+updateCurrencyDisplay();
+gainXP(pocketedObjectChips.length * XP_PER_BALL);
             }
 
         } else {
@@ -9820,13 +9821,27 @@ function updateInfoBox() {
     } 
 }
 // Idagdag itong 3 bagong functions
-function loadCurrency() {
-    // Kinukuha ang na-save na currency sa browser
-    const savedCurrency = localStorage.getItem('pinoyPoolCurrency');
-    playerTotalCurrency = savedCurrency ? parseInt(savedCurrency, 10) : 0;
-    updateCurrencyDisplay();
+// ✅ BAGONG LOAD FUNCTION (Galing Firebase)
+async function loadCurrency() {
+    if (!db || !localPlayerUid) return; // Wait for connection
+    try {
+        const docRef = doc(db, "players", localPlayerUid);
+        const snap = await getDoc(docRef);
+        
+        if (snap.exists()) {
+            // Kunin ang laman ng wallet sa server
+            playerTotalCurrency = snap.data().balance || 0;
+            console.log("PPM Loaded:", playerTotalCurrency);
+        } else {
+            // New Player? Bigyan ng 100 PPM panimula
+            playerTotalCurrency = 100;
+            updatePlayerData(localPlayerUid); // Save agad
+        }
+        updateCurrencyDisplay();
+    } catch (e) {
+        console.error("Error loading PPM:", e);
+    }
 }
-
 function loadPlayerName() {
     // 1. I-check kung nasa loob tayo ng Telegram Mini App
     const tg = window.Telegram?.WebApp;
@@ -11196,20 +11211,25 @@ function showColorAssignmentPopup(message, color) {
     }, 4000); // Mananatili ng 2.5 segundo
 }
 // ▲▲▲ HANGGANG DITO ANG BAGONG FUNCTION ▲▲▲
-        function signInPlayer() { 
+     function signInPlayer() { 
     onAuthStateChanged(auth, (user) => { 
         if (user) { 
             localPlayerUid = user.uid; 
             isAuthReady = true; 
             onlineButton.disabled = false; 
             
-            // onlineButton.textContent = "Online Multiplayer"; // <--- BINURA KO NA ITO! (Ang salarin)
+            // --- 👇 DITO NATIN IDINAGDAG ITO 👇 ---
+            // Tawagin ang function para kunin ang $PPM sa database
+            if (typeof loadCurrency === 'function') {
+                loadCurrency(); 
+            }
+            // --------------------------------------
             
-            // Sa halip na palitan ang lahat, yung SUBTITLE lang ang i-update natin (Optional)
+            // Update UI (Subtitle lang)
             const sub = document.querySelector('#online-button .card-subtitle');
             if(sub) {
                 sub.textContent = "Ranked Match • Online";
-                sub.style.color = "#00FF00"; // Gawing Green para alam mong connected
+                sub.style.color = "#00FF00"; 
             }
 
             createPlayerDocument(); 
@@ -11220,7 +11240,6 @@ function showColorAssignmentPopup(message, color) {
                 console.error("Sign-in failed:", error); 
                 isAuthReady = false; 
                 
-                // onlineButton.textContent = "Auth Failed"; // <--- BINURA KO RIN ITO
                 onlineButton.disabled = true; 
             }); 
         } 
@@ -13231,8 +13250,19 @@ function closeDailyRewardModal() {
 }
 
 // Function para i-save ang currency (para reusable)
-function saveCurrency() {
-     localStorage.setItem('pinoyPoolCurrency', playerTotalCurrency.toString());
+// ✅ BAGONG SAVE FUNCTION (Papuntang Firebase)
+async function saveCurrency() {
+    if (!db || !localPlayerUid) return;
+    try {
+        const docRef = doc(db, "players", localPlayerUid);
+        // I-update ang balance sa database
+        await updateDoc(docRef, {
+            balance: playerTotalCurrency
+        });
+        console.log("PPM Saved:", playerTotalCurrency);
+    } catch (e) {
+        console.error("Error saving PPM:", e);
+    }
 }
 
 // ▼▼▼ UPDATED LOBBY LOGIC (WITH RANK CARD) ▼▼▼
@@ -14176,7 +14206,7 @@ const assetsToLoad = [
 
     // 2. Static Images
     'https://i.imgur.com/Wg3y3Zn.jpeg', // Background Floor
-    'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_jsh1arjsh1arjsh1.png', // Wood Texture (UPDATED)
+    'https://raw.githubusercontent.com/arnoldtasipit66-wq/my-game-assets/refs/heads/main/Gemini_Generated_Image_qtberbqtberbqtbe.png', // Wood Texture (UPDATED NA)
     'https://i.imgur.com/yCvO16j.png', // Ghost Hand
     'https://i.imgur.com/FYXWKhr.png', // Default Cue Stick
 ];
