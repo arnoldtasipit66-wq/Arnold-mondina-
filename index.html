@@ -9808,11 +9808,10 @@ let isAuthReady = false;
 let firebaseInitialized = false;
 let connectedWalletAddress = null; // ✅ Mahalaga ito para sa Wallet Sync
 
-// --- 2. INITIALIZE FIREBASE FUNCTION ---
 function initializeFirebase() { 
     try { 
-        // I-disable muna ang button habang nagkokonekta
-        if (onlineButton) onlineButton.disabled = true; 
+        // onlineButton.textContent = "Connecting..."; // <--- BINURA KO NA ITO (Commented out)
+        onlineButton.disabled = true; // Disable muna habang loading
         
         const firebaseConfig = { 
             apiKey: "AIzaSyD0gZfJxpA_4fO-SEOjX9JNs0v7IzQ0iSc", 
@@ -9824,30 +9823,26 @@ function initializeFirebase() {
             appId: "1:1003592334290:web:2982cdc8691e8ef7c6260b" 
         }; 
 
-        // Initialize Firebase Apps
         const app = initializeApp(firebaseConfig); 
         db = getFirestore(app); 
         auth = getAuth(app); 
         rtdb = getDatabase(app); 
         
-        // Simulan ang Login Process
         signInPlayer(); 
-        
-        firebaseInitialized = true;
-        console.log("Firebase initialized and ready.");
-        
+        firebaseInitialized = true; 
     } catch (error) { 
-        console.warn("Firebase failed to load:", error); 
+        console.warn("Firebase failed.", error); 
         firebaseInitialized = false; 
         
-        // Error display sa UI
-        const sub = document.querySelector('#online-button .card-subtitle');
-        if(sub) sub.textContent = "Offline (Check Connection)";
+        // onlineButton.textContent = "Offline"; // <--- BINURA KO RIN ITO
         
-        if (onlineButton) onlineButton.disabled = true; 
+        // Update natin ang subtitle na lang kung offline (Optional)
+        const sub = document.querySelector('#online-button .card-subtitle');
+        if(sub) sub.textContent = "Offline (Check Internet)";
+        
+        onlineButton.disabled = true; 
     } 
-}
-// Idagdag itong 3 bagong functions
+}// Idagdag itong 3 bagong functions
 // ✅ BAGONG LOAD FUNCTION (Galing Firebase)
 async function loadCurrency() {
     if (!db || !localPlayerUid) return; // Wait for connection
