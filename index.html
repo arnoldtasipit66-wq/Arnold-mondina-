@@ -9801,7 +9801,13 @@ function updateInfoBox() {
     
     updateLegalTargetChips(); 
 }
-       
+       // --- 1. GLOBAL VARIABLES (Dito nakatira ang data) ---
+let db, auth, rtdb;
+let localPlayerUid = null;
+let isAuthReady = false;
+let firebaseInitialized = false;
+let connectedWalletAddress = null; // ✅ Mahalaga ito para sa Wallet Sync
+
 // --- 2. INITIALIZE FIREBASE FUNCTION ---
 function initializeFirebase() { 
     try { 
@@ -14778,7 +14784,8 @@ const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
     buttonRootId: 'ton-connect'
 });
 
-
+// 1. Variable para itago ang address kung sakaling hindi pa log-in ang user
+let connectedWalletAddress = null; 
 
 // 2. Ang bagong Listener
 tonConnectUI.onStatusChange(async (wallet) => {
