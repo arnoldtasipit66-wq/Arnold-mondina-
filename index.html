@@ -10996,73 +10996,77 @@ function renderShopItems() {
     if (!itemsToDisplay) return;
 
     itemsToDisplay.forEach(item => {
-        // 1. Check status (Owned o Equipped)
-        let isOwned = playerInventory[currentShopTab].includes(item.id);
-        // Hanapin ito sa loob ng renderShopItems loop:
-let isEquipped = (equippedItems.cue === item.id || equippedItems.frame === item.id || equippedItems.felt === item.id);
+    let isOwned = playerInventory[currentShopTab].includes(item.id);
+    let isEquipped = (equippedItems.cue === item.id || equippedItems.frame === item.id || equippedItems.felt === item.id);
+    
+    let currentAds = adWatchProgress[item.id] || 0;
+    let adsNeeded = item.adRequired || 0;
+
+    let buttonHtml = '';
+
+    if (isEquipped) {
+        buttonHtml = `<button class="shop-buy-button equipped" disabled>Equipped</button>`;
+    } else if (isOwned) {
+        buttonHtml = `<button class="shop-buy-button equip" onclick="handleShopAction('${item.id}', '${currentShopTab}')">Equip</button>`;
+    } else {
+        // --- DITO ANG PAG-AYOS SA ADS LOGIC ---
+        let adsButtonHtml = '';
         
-        // 2. Kunin ang progress ng ads (hal. 1/3)
-        let currentAds = adWatchProgress[item.id] || 0;
-        let adsNeeded = item.adRequired || 0;
+        if (adsNeeded > 0) {
+            const canClaim = currentAds >= adsNeeded;
+            const action = canClaim ? `window.claimAdItem('${item.id}', '${currentShopTab}')` : `window.watchAdForItem('${item.id}', '${currentShopTab}', ${adsNeeded})`;
+            const label = canClaim ? '✅ CLAIM REWARD' : `WATCH (${currentAds}/${adsNeeded})`;
+            
+            // Kalkulahin ang progress percentage para sa background
+            const progressPercent = (currentAds / adsNeeded) * 100;
+            const btnColor = canClaim 
+                ? 'linear-gradient(135deg, #00FF00, #008000)' 
+                : `linear-gradient(90deg, #FF8C00 ${progressPercent}%, #222 ${progressPercent}%)`;
 
-        let buttonHtml = '';
-
-        if (isEquipped) {
-            buttonHtml = `<button class="shop-buy-button equipped" disabled>Equipped</button>`;
-        } else if (isOwned) {
-            // Kung nabili na o na-unlock na via ads, "Equip" na lang ang button
-            buttonHtml = `<button class="shop-buy-button equip" onclick="handleShopAction('${item.id}', '${currentShopTab}')">Equip</button>`;
-        } else {
-            // 3. DITO ANG MONETIZATION: Coins o Ads?
-            buttonHtml = `
-                <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                    <button class="shop-buy-button buy" onclick="handleShopAction('${item.id}', '${currentShopTab}')">
-                        💰 ${formatCurrencyShort(item.price)}
-                    </button>
-                    
-                    // BAGONG CODE (FIXED):
-${adsNeeded > 0 ? (() => {
-    const canClaim = currentAds >= adsNeeded;
-    const action = canClaim ? `window.claimAdItem('${item.id}', '${currentShopTab}')` : `window.watchAdForItem('${item.id}', '${currentShopTab}', ${adsNeeded})`;
-    const label = canClaim ? '✅ CLAIM REWARD' : `WATCH (${currentAds}/${adsNeeded})`;
-    const btnColor = canClaim ? 'linear-gradient(135deg, #00FF00, #008000)' : `linear-gradient(90deg, #FF8C00 ${(currentAds/adsNeeded)*100}%, #222 ${(currentAds/adsNeeded)*100}%)`;
-
-    return `
-    <button class="shop-buy-button" 
-        style="background: ${btnColor}; color: white; font-weight: 800; border: 2px solid #FFD700;" 
-        onclick="${action}">
-        📺 ${label}
-    </button>`;
-})() : ''}
-
-        // 4. I-render ang Stats (para sa Cues)
-        let statsHtml = '';
-        if (currentShopTab === 'cues' && item.stats) {
-            statsHtml = `
-                <div class="shop-item-stats">
-                    <div class="stat-entry">
-                        <span class="stat-label">POW</span>
-                        <div class="stat-bar-background"><div class="stat-bar-fill power" style="width: ${item.stats.Power * 10}%"></div></div>
-                    </div>
-                    <div class="stat-entry">
-                        <span class="stat-label">AIM</span>
-                        <div class="stat-bar-background"><div class="stat-bar-fill aim" style="width: ${item.stats.Aim * 10}%"></div></div>
-                    </div>
-                </div>
-            `;
+            adsButtonHtml = `
+                <button class="shop-buy-button" 
+                    style="background: ${btnColor}; color: white; font-weight: 800; border: 2px solid #FFD700; margin-top: 5px;" 
+                    onclick="${action}">
+                    📺 ${label}
+                </button>`;
         }
 
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'shop-item';
-        itemDiv.innerHTML = `
-            <div class="shop-item-preview" style="background-image: url('${item.imageSrc}');"></div>
-            <div class="shop-item-name">${item.name}</div>
-            ${statsHtml}
-            ${buttonHtml}
+        buttonHtml = `
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                <button class="shop-buy-button buy" onclick="handleShopAction('${item.id}', '${currentShopTab}')">
+                    💰 ${formatCurrencyShort(item.price)}
+                </button>
+                ${adsButtonHtml}
+            </div>
         `;
-        container.appendChild(itemDiv);
-    });
-}
+    }
+
+    // 4. Render Stats (Walang bago dito, kinuha lang sa code mo)
+    let statsHtml = '';
+    if (currentShopTab === 'cues' && item.stats) {
+        statsHtml = `
+            <div class="shop-item-stats">
+                <div class="stat-entry">
+                    <span class="stat-label">POW</span>
+                    <div class="stat-bar-background"><div class="stat-bar-fill power" style="width: ${item.stats.Power * 10}%"></div></div>
+                </div>
+                <div class="stat-entry">
+                    <span class="stat-label">AIM</span>
+                    <div class="stat-bar-background"><div class="stat-bar-fill aim" style="width: ${item.stats.Aim * 10}%"></div></div>
+                </div>
+            </div>`;
+    }
+
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'shop-item';
+    itemDiv.innerHTML = `
+        <div class="shop-item-preview" style="background-image: url('${item.imageSrc}');"></div>
+        <div class="shop-item-name">${item.name}</div>
+        ${statsHtml}
+        ${buttonHtml}
+    `;
+    container.appendChild(itemDiv);
+});
 
 // Ginawa nating 'window.handleShopAction' para mabasa ng onclick sa shop HTML
 window.handleShopAction = async function(itemId, category) {
