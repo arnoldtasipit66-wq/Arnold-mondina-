@@ -15221,16 +15221,7 @@ function closeDailyRewardModal() {
     }
 }
 
-async function saveCurrency() {
-    if (!db || !localPlayerUid) return;
-    // Tatawagin ang updatePlayerData pero 'false' sa didWin dahil currency update lang ito
-    await updatePlayerData(localPlayerUid, false);
-}
-// ▼▼▼ UPDATED LOBBY LOGIC (WITH RANK CARD) ▼▼▼
 
-/**
- * Ito ang function na nag-cacalculate kung gaano kalayo ka na sa next rank.
- */
 function updateLobbyRankDisplay() {
     const card = document.getElementById('lobby-rank-card');
     const iconEl = document.getElementById('lobby-rank-icon');
