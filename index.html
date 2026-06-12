@@ -11726,28 +11726,56 @@ function updateInfoBox() {
         onlineButton.disabled = true; 
     } 
 }
-// Idagdag itong 3 bagong functions
-// ✅ BAGONG LOAD FUNCTION (Galing Firebase)
+// ✅ BAGONG LOAD FUNCTION (Local Storage + Firebase Sync)
 async function loadCurrency() {
-    if (!db || !localPlayerUid) return; // Wait for connection
-    try {
-        const docRef = doc(db, "players", localPlayerUid);
-        const snap = await getDoc(docRef);
-        
-        if (snap.exists()) {
-            // Kunin ang laman ng wallet sa server
-            playerTotalCurrency = snap.data().balance || 0;
-            console.log("PPM Loaded:", playerTotalCurrency);
-        } else {
-            // New Player? Bigyan ng 3000 coins panimula (Para makalaro sa 1k bet)
-            playerTotalCurrency = 3000; 
-            
-            // Note: Siguraduhing tama ang field name sa database ('balance' o 'currency')
-            updatePlayerData(localPlayerUid); // Save agad
+    // 1. Kunin muna ang pera sa Local Storage ng phone (Instant Load kahit offline)
+    const localCoins = localStorage.getItem('pinoyPoolCoins');
+    
+    if (localCoins !== null) {
+        playerTotalCurrency = parseInt(localCoins, 10);
+    } else {
+        playerTotalCurrency = 3000; // Starting coins para sa bagong player
+        localStorage.setItem('pinoyPoolCoins', playerTotalCurrency.toString());
+    }
+    
+    // I-update agad ang display sa UI para hindi zero ang nakikita sa umpisa
+    updateCurrencyDisplay();
+
+    // 2. I-sync sa Firebase sa background (Kung may internet at naka-login)
+    if (window.db && window.localPlayerUid && navigator.onLine) {
+        try {
+            const docRef = window.doc(window.db, "players", window.localPlayerUid);
+            const snap = await window.getDoc(docRef);
+            if (snap.exists()) {
+                const serverCoins = snap.data().balance || 0;
+                // Kung mas malaki ang pera sa server (halimbawa nilaro sa ibang device), i-sync sa local
+                if (serverCoins > playerTotalCurrency) {
+                    playerTotalCurrency = serverCoins;
+                    localStorage.setItem('pinoyPoolCoins', playerTotalCurrency.toString());
+                    updateCurrencyDisplay();
+                }
+            }
+        } catch (e) {
+            console.log("Firebase sync skipped (Offline o nag-error):", e);
         }
-        updateCurrencyDisplay();
-    } catch (e) {
-        console.error("Error loading PPM:", e);
+    }
+}
+
+// ✅ BAGONG SAVE FUNCTION (Local Storage + Firebase Sync)
+async function saveCurrency() {
+    // 1. I-save agad sa phone memory para sureball na hindi mawawala kahit mag-close bigla
+    localStorage.setItem('pinoyPoolCoins', playerTotalCurrency.toString());
+
+    // 2. I-save sa Firebase server kung may internet
+    if (window.db && window.localPlayerUid && navigator.onLine) {
+        try {
+            // Kung may function ka na updatePlayerData, tatawagin natin para i-sync sa cloud
+            if (typeof updatePlayerData === 'function') {
+                await updatePlayerData(window.localPlayerUid, false); 
+            }
+        } catch(e) {
+            console.log("Hindi ma-save sa Firebase, pero safe na sa local storage.");
+        }
     }
 }
 function loadPlayerName() {
