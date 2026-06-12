@@ -13689,11 +13689,12 @@ async function cancelOnlineGame() {
         console.error("Failed to reset game for rematch:", error); 
     } 
 }
-        function sendLiveAimData() {
-    // 1. Safety Checks (Wag galawin - ito yung dati)
+        // ✅ ANTI-FREEZE AIM SYNC (Safety Filter para hindi ma-stuck sa screen ng kalaban)
+function sendLiveAimData() {
+    // 1. Safety Checks
     if (!isOnlineGame || !isMyTurnOnline || !gameId || table.width === 0) return;
 
-    // Throttling (Para hindi bawat millisecond ay nagpapadala)
+    // Throttling (Para hindi bawat millisecond ay nagpapadala, iwas lag)
     const now = Date.now();
     if (now - lastAimUpdateTime < AIM_UPDATE_INTERVAL) return;
     lastAimUpdateTime = now;
@@ -13701,28 +13702,31 @@ async function cancelOnlineGame() {
     const cueChip = chips.find(c => c.id === 0);
     if (!cueChip) return;
 
-    // 2. Ihanda ang Data (Wag galawin - ito yung dati)
+    // 2. Ihanda ang Data (Nilagyan ng Number.isFinite para 100% laging tanggapin ng Firebase)
+    const safeAngle = Number.isFinite(cueStick.angle) ? cueStick.angle : 0;
+    const safePullback = Number.isFinite(cueStick.pullback) ? cueStick.pullback : 0;
+    const safePektusX = Number.isFinite(pektusOffset.x) ? pektusOffset.x : 0;
+    const safePektusY = Number.isFinite(pektusOffset.y) ? pektusOffset.y : 0;
+    const safeCueX = Number.isFinite(cueChip.x / canvas.width) ? (cueChip.x / canvas.width) : 0.5;
+    const safeCueY = Number.isFinite(cueChip.y / canvas.height) ? (cueChip.y / canvas.height) : 0.5;
+
     const dataToSend = {
-        angle: cueStick.angle,
-        cueBallX: cueChip.x / canvas.width,
-        cueBallY: cueChip.y / canvas.height,
-        pektusX: pektusOffset.x,
-        pektusY: pektusOffset.y,
-        pullback: cueStick.pullback, // Sinama natin ang hatak
-        sender: localPlayerUid
+        angle: safeAngle,
+        cueBallX: safeCueX,
+        cueBallY: safeCueY,
+        pektusX: safePektusX,
+        pektusY: safePektusY,
+        pullback: safePullback,
+        sender: localPlayerUid || "unknown"
     };
 
-    // 3. PADALAHIN SA RTDB (Ito ang Bago!)
-    // Dati: updateDoc(...)
-    // Ngayon: Gagamit na tayo ng 'set' sa RTDB path na 'gameData/GAME_ID/liveAim'
-    
-    // Gumawa ng reference (address) kung saan ise-save
-    const aimRef = ref(rtdb, `gameData/${gameId}/liveAim`);
-    
-    // I-save ang data
-    set(aimRef, dataToSend).catch((err) => {
-        console.warn("Aim sync error:", err);
-    });
+    // 3. PADALAHIN SA RTDB
+    if (typeof rtdb !== 'undefined' && typeof set !== 'undefined' && typeof ref !== 'undefined') {
+        const aimRef = ref(rtdb, `gameData/${gameId}/liveAim`);
+        set(aimRef, dataToSend).catch((err) => {
+            console.warn("Aim sync error (Hindi napadala ang galaw ng tako):", err);
+        });
+    }
 }
 // Variable para pwede nating patayin ang listener pagtapos ng game
 let unsubscribeAimListener = null; 
