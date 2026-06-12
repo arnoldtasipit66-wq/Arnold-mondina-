@@ -13186,7 +13186,7 @@ function showColorAssignmentPopup(message, color) {
     }, 4000); // Mananatili ng 2.5 segundo
 }
 // ▲▲▲ HANGGANG DITO ANG BAGONG FUNCTION ▲▲▲
-     // ✅ BAGONG SIGN-IN FUNCTION (Smart Login: Firebase if Online, Bypass if Offline)
+// ✅ BAGONG SIGN-IN FUNCTION (Fixed UID Variable)
 async function signInPlayer() {
     console.log("Checking login state...");
 
@@ -13197,8 +13197,8 @@ async function signInPlayer() {
             savedUid = 'player_' + Math.random().toString(36).substring(2, 15);
             localStorage.setItem('pinoyPoolLocalUid', savedUid);
         }
-        window.localPlayerUid = savedUid;
-        console.log("Bypass Mode Active! UID:", window.localPlayerUid);
+        localPlayerUid = savedUid; // 👈 Dito yung fix! Tinanggal ang 'window.'
+        console.log("Bypass Mode Active! UID:", localPlayerUid);
     }
 
     // 1. Tignan kung may internet at available ang Firebase Auth
@@ -13206,17 +13206,16 @@ async function signInPlayer() {
         try {
             // Subukan ang totoong Firebase Login
             const userCredential = await signInAnonymously(auth);
-            window.localPlayerUid = userCredential.user.uid;
+            localPlayerUid = userCredential.user.uid; // 👈 Tinanggal ang 'window.'
             
             // I-save din natin locally para may backup kapag nawalan ng net
-            localStorage.setItem('pinoyPoolLocalUid', window.localPlayerUid);
-            console.log("Firebase Login Success! UID:", window.localPlayerUid);
+            localStorage.setItem('pinoyPoolLocalUid', localPlayerUid);
+            console.log("Firebase Login Success! UID:", localPlayerUid);
         } catch (error) {
             console.log("Firebase Login Failed (Blocked/Offline), using bypass...", error);
-            useLocalAuthBypass(); // Fallback kung mag-error ang Firebase
+            useLocalAuthBypass(); // Fallback kung mag-error ang Firebase dahil sa domain
         }
     } else {
-        // Kapag walang net o walang Firebase
         useLocalAuthBypass();
     }
 
