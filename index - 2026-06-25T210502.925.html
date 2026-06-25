@@ -8830,18 +8830,21 @@ function playCoinSound() {
 let particles = [];
 
 function spawnSparks(x, y, impactSpeed) {
-    let numSparks = Math.min(20, Math.floor(impactSpeed * 1.5));
+    // BINAWASAN: Mula 20 maximum sparks, ginawa nating 8 lang
+    let numSparks = Math.min(8, Math.floor(impactSpeed * 0.8));
+    
     for(let i = 0; i < numSparks; i++) {
         let angle = Math.random() * Math.PI * 2;
         let speed = Math.random() * impactSpeed * 3;
         particles.push({
-            x: x, y: y,
+            x: x,
+            y: y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             radius: (Math.random() * 3 + 1.5) * scale,
             color: '255, 215, 0', // Gold Sparks
             alpha: 1,
-            decay: 1.5 + Math.random() * 2 
+            decay: 2.0 + Math.random() * 2 // Pinabilis natin ang pag-fade out
         });
     }
 }
@@ -8858,16 +8861,20 @@ function updateParticles(dt) {
 
 function drawParticles() {
     if (particles.length === 0) return;
+    
     ctx.save();
-    ctx.globalCompositeOperation = 'lighter'; // MAGIC GLOW
+    // TINANGGAL ANG: ctx.globalCompositeOperation = 'lighter';
+    
     particles.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
         ctx.fill();
     });
+    
     ctx.restore();
 }
+
 
         // =========================================
 // 💬 HTML FLOATING TEXT SYSTEM (Lulusot sa Kahoy!)
