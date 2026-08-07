@@ -4804,24 +4804,27 @@ div#opponent-info.hud-active {
 }
 
 /* Style para sa Tako sa loob ng Power Bar */
+/* Style para sa Tako sa loob ng Power Bar */
 #power-cue-img {
     position: absolute;
     width: 230px;  /* Haba ng tako */
-    height: 100px;  /* Taba ng tako */
+    height: 100px;  /* Bounding box na lang ito ngayon */
+    
+    /* ITO ANG MAGIC FIX PARA HINDI MA-STRETCH AT TUMABA ANG TAKO: */
+    object-fit: contain; 
     
     /* Sentro Horizontal at Vertical + Ikot */
     transform: translate(-50%, -50%) rotate(-90deg);
     
     left: 50%;     /* Gitna horizontally */
-    
-    /* ITO ANG BAGO: Naka-steady sa GITNA (50%) */
     top: 50%;      
     
     pointer-events: none; 
-    transition: top 0.1s ease-out; /* May konting smooth effect pagbalik */
+    transition: top 0.1s ease-out; 
     z-index: 5;
     filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
 }
+
 
 /* Gawing clickable ang itsura ng profile picture */
 #profile-avatar-img {
