@@ -22,6 +22,14 @@
     // Runs ASAP (before first paint) so the CSS `height: calc(var(--vh, 1vh) * 100)`
     // fallback rule always has a real value, even on older WebView engines
     // (e.g. Sketchware's Android WebView) where 100dvh isn't fully reliable yet.
+    // --- DEBUG LOGGING SWITCH ---
+    // Set to true lang habang naglo-local test (Chrome/Sketchware debug build).
+    // I-false bago mag-build ng production APK — pinapatay nito ang lahat ng
+    // dlog() calls (dating console.log) para hindi na sila mag-idle sa main
+    // thread ng mahihinang Android device kapag totoong laro na.
+    window.DEBUG_MODE = false;
+    function dlog(...args) { if (window.DEBUG_MODE) console.log(...args); }
+
     (function setViewportHeightVar() {
         function update() {
             document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
@@ -684,6 +692,7 @@ img {
     z-index: var(--z-gameplay) !important; 
     transform-origin: 100% 50%; 
     filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.5));
+    will-change: transform; /* PERF: GPU layer hint — dinudrag ito 60x/sec habang naka-aim */
 }
 
     #game-wrapper {
@@ -738,6 +747,7 @@ img {
     transform: translate(-50%, -50%); 
     
     filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.4));
+    will-change: left, top; /* PERF: GPU hint — sumusunod sa daliri/mouse habang naka-drag */
 }
 
     #non-interactive-overlay {
@@ -903,6 +913,7 @@ img {
         left: 50%; 
         transform: translate(-50%, -50%);
         pointer-events: none; 
+        will-change: left, top; /* PERF: GPU hint — updated habang dina-drag ang spin/english */
         
         /* White border para lutang na lutang sa Gold background */
         border: 1px solid white; 
@@ -4610,7 +4621,11 @@ div#opponent-info.hud-active {
     width: 100vw;
     height: 100vh;
     height: 100dvh;
-    background: radial-gradient(circle at center, var(--felt-green) 0%, var(--felt-green-deep) 100%);
+    background-color: var(--felt-green-deep);
+    background-image: url('assets_images/splash_logo.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     z-index: var(--z-preloader); /* Pinaka-ibabaw sa lahat */
     display: flex;
     justify-content: center;
@@ -4623,59 +4638,55 @@ div#opponent-info.hud-active {
 }
 
 .preloader-content {
-    text-align: center;
+    position: relative;
+    width: 100vw;
+    height: 100%;
+}
+
+/* KALIWA: gold loading bar + "Game Ready" status text —
+   NAKAPATONG lang sa ibabaw ng background image (position:absolute),
+   hindi na ito naka-flex kaya hindi na naaapektuhan/naguugalaw
+   ang logo/background image. */
+.preloader-left {
+    position: absolute;
+    left: 3vw;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16vw;
+    max-width: 220px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 25px;
+    gap: 14px;
+    text-align: center;
 }
 
-.preloader-title {
-    font-family: 'Luckiest Guy', cursive;
-    font-size: 5.5rem;
-    margin: 0 0 10px 0;
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    text-shadow: 4px 4px 0 #000, 0 0 30px rgba(255, 215, 0, 0.6);
-
-    background: linear-gradient(to bottom, #FFFFFF 0%, var(--gold-accent) 80%, #FFA500 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-
-    filter: drop-shadow(0px 8px 0px var(--gold-deep)) drop-shadow(0 15px 30px rgba(228, 185, 61, 0.5));
-    animation: floatTitle 3s ease-in-out infinite;
+/* KANAN: salita-por-salita ang linya ng "click anywhere" —
+   nakapatong din lang sa ibabaw ng background image. */
+.preloader-right {
+    position: absolute;
+    right: 3vw;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
-/* Spinner Animation */
-.loader-spinner {
-    width: 70px;
-    height: 70px;
-    border: 6px solid rgba(228, 185, 61, 0.15);
-    border-top-color: var(--gold-accent);
-    border-radius: 50%;
-    box-shadow: 0 0 20px rgba(228, 185, 61, 0.4), inset 0 0 15px rgba(228, 185, 61, 0.2);
-    animation: spinFast 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+/* Spinner — nakapatong sa ibaba-gitna ng background image */
+.preloader-content > .loader-spinner {
+    position: absolute;
+    left: 50%;
+    bottom: 6vh;
+    transform: translateX(-50%);
 }
 
-#loading-text {
-    font-family: 'Nunito', sans-serif;
-    color: var(--cream-text);
-    font-size: 1.3rem;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(228, 185, 61, 0.5);
-    animation: pulseText 1.5s infinite alternate;
-}
-
-/* Real asset-loading progress bar — driven by updateProgress() in JS,
-   sits under the loading text so the splash reads like a native app boot,
-   not just a spinner that could be stuck. */
+/* Gold loading bar (kaliwa) */
 .preloader-progress-track {
-    width: 200px;
-    max-width: 60vw;
-    height: 6px;
+    width: 100%;
+    height: 8px;
     border-radius: var(--radius-pill);
     background: rgba(255, 255, 255, 0.12);
     overflow: hidden;
@@ -4688,6 +4699,33 @@ div#opponent-info.hud-active {
     background: linear-gradient(90deg, var(--gold-deep), var(--gold-accent));
     box-shadow: 0 0 8px rgba(228, 185, 61, 0.7);
     transition: width 0.25s ease-out;
+}
+
+/* "Game Ready" / status text sa kaliwa, may dashed na linya sa ilalim
+   (yung "-------" na hiniling) */
+.preloader-status-text {
+    font-family: 'Nunito', sans-serif;
+    color: var(--cream-text);
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(228, 185, 61, 0.5);
+    animation: pulseText 1.5s infinite alternate;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed var(--gold-accent);
+    width: 100%;
+}
+
+/* Spinner Animation */
+.loader-spinner {
+    width: 70px;
+    height: 70px;
+    border: 6px solid rgba(228, 185, 61, 0.15);
+    border-top-color: var(--gold-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(228, 185, 61, 0.4), inset 0 0 15px rgba(228, 185, 61, 0.2);
+    animation: spinFast 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
 }
 
 @keyframes floatTitle {
@@ -6589,14 +6627,7 @@ div.game-card .card-title {
     background: transparent !important; 
     border: none !important;
     box-shadow: none !important;
-    
-    color: var(--gold-accent) !important; 
-    font-family: 'Luckiest Guy', cursive !important;
-    font-size: 2.5rem !important;
-    text-transform: uppercase !important;
-    letter-spacing: 3px !important;
-    text-shadow: 2px 2px 0px #000, 0 0 20px rgba(228, 185, 61, 0.8) !important;
-    
+    color: transparent !important;
     z-index: var(--z-preloader-cta) !important;
     cursor: pointer !important;
     /* BINAGO: tinanggal ang !important sa display para gumana ang
@@ -6604,12 +6635,30 @@ div.game-card .card-title {
        "display:none", nananalo pa rin itong !important rule kaya
        nananatiling buong-screen na invisible/click-blocking button
        ang #start-game-btn kahit tapos na ang preloader). */
-    display: flex;
-    justify-content: center !important;
-    align-items: flex-end !important; 
-    padding-bottom: 15vh !important; 
-    
-    animation: pulseStartText 1.5s infinite alternate !important; 
+    display: block;
+}
+
+/* Nakikitang "Click Anywhere to Start" label — BAHAGI ng normal na
+   stack sa loob ng .preloader-content, kaya guaranteed na laging
+   nasa ILALIM ng logo ito, kahit anong laki ng logo o screen.
+   Ang mismong click detection ay hawak pa rin ng buong-screen na
+   #start-game-btn sa itaas (transparent na, walang sariling text). */
+/* Nakikitang "Click Anywhere to Start" label — HINDI na character-by-
+   character na patayo; bawat SALITA ang isang linya (Click / Anywhere /
+   To / Start), normal/horizontal pa rin ang bawat salita para mas
+   madaling basahin, tumutulo lang pababa sa makitid na 1/4 na
+   bahagi ng screen sa kanan. */
+.preloader-cta-label {
+    font-family: 'Luckiest Guy', cursive;
+    color: var(--gold-accent);
+    font-size: 2.1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    line-height: 1.5;
+    text-align: center;
+    text-shadow: 2px 2px 0px #000, 0 0 20px rgba(228, 185, 61, 0.8);
+    animation: pulseStartText 1.5s infinite alternate;
+    pointer-events: none;
 }
 
 /* Safety net: kapag na-hide na ito ng JS (display:none / .removed class),
@@ -6638,10 +6687,9 @@ div.game-card .card-title {
    📱 FIX PARA SA LANDSCAPE MOBILE
 ========================================= */
 @media (max-height: 500px) {
-    .preloader-title { font-size: 3.5rem !important; margin-bottom: 5px !important; }
-    .loader-spinner { width: 50px !important; height: 50px !important; border-width: 4px !important; }
-    .preloader-content { gap: 15px; }
-    #start-game-btn { font-size: 1.8rem !important; padding-bottom: 10vh !important; }
+    .loader-spinner { width: 50px !important; height: 50px !important; border-width: 4px !important; bottom: 3vh !important; }
+    .preloader-left { width: 20vw; gap: 8px; top: 30%; }
+    .preloader-cta-label { font-size: 1.1rem !important; letter-spacing: 3px !important; }
 }
 
         /* =========================================
@@ -7534,17 +7582,29 @@ div.game-card.secondary-card:hover, div.game-card.secondary-card:active {
 
 <div id="preloader-overlay">
     <div class="preloader-content">
-        <!-- Dinagdag ang MONSTER at nilagyan ng line break para sakto sa gitna -->
-        <h1 class="preloader-title">PINOY POOL<br><span style="color: #FF4500; filter: drop-shadow(0 5px 0 #8B0000);">MONSTER</span></h1>
-        
+        <!-- Ang buong image na ang background (cover, hindi na ito
+             ginagalaw/ini-resize ng text) -->
+
+        <!-- KALIWA: gold loading bar + "Game Ready" status text,
+             nakapatong lang sa taas ng background image -->
+        <div class="preloader-left">
+            <div class="preloader-progress-track"><div id="preloader-progress-fill"></div></div>
+            <div id="loading-text" class="preloader-status-text">Loading Assets... 0%</div>
+        </div>
+
         <div class="loader-spinner"></div>
-        <div id="loading-text">Loading Assets... 0%</div>
-        <div class="preloader-progress-track"><div id="preloader-progress-fill"></div></div>
-        
-        <!-- Binago ang text at tatanggalin natin ang background nito sa CSS -->
-        <button id="start-game-btn" style="display: none;">
-            CLICK ANYWHERE TO START
-        </button>
+
+        <!-- KANAN: "click anywhere" na salita-por-salita ang linya,
+             nakapatong lang sa taas ng background image -->
+        <div class="preloader-right">
+            <div id="preloader-cta-label" class="preloader-cta-label" style="display: none;">
+                Click<br>Anywhere<br>To<br>Start
+            </div>
+        </div>
+
+        <!-- Buong-screen na INVISIBLE click-catcher (walang sariling
+             text) — dito pa rin dumadaan ang click/tap kahit saan. -->
+        <button id="start-game-btn" style="display: none;" aria-label="Click anywhere to start"></button>
     </div>
 </div>
 
@@ -7641,7 +7701,7 @@ div.game-card.secondary-card:hover, div.game-card.secondary-card:active {
         <div id="power-control" class="control-area">
     <span class="control-label">POWER</span>
     <div id="power-bar"></div>
-    <img id="power-cue-img" src="assets_images/dKur0qc.png">
+    <img id="power-cue-img" src="assets_images/cue_probinsyano.png">
 </div>
         <div id="pektus-control" class="control-area">
             <span class="control-label">SPIN</span>
@@ -7668,7 +7728,7 @@ div.game-card.secondary-card:hover, div.game-card.secondary-card:active {
         <div style="position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(0,0,0,0.1); border-top: 1px dashed rgba(255,255,255,0.3); pointer-events: none;"></div>
         <div style="position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: rgba(0,0,0,0.1); border-left: 1px dashed rgba(255,255,255,0.3); pointer-events: none;"></div>
         
-        <div id="big-red-dot" style="width: 30px; height: 30px; background: red; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: none;"></div>
+        <div id="big-red-dot" style="width: 30px; height: 30px; background: red; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.5); pointer-events: none; will-change: left, top;"></div>
         
         <div id="big-pektus-touch-area" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;"></div>
     </div>
@@ -8169,7 +8229,7 @@ div.game-card.secondary-card:hover, div.game-card.secondary-card:active {
             close: function () {
                 // TODO: Kung gusto mong literal na isara ang app sa Android (Sketchware),
                 // dito mo ikokonekta ang JS-to-Android bridge mo (hal. Android.exitApp()).
-                console.log("App close requested (native exit should be handled on the Android side).");
+                dlog("App close requested (native exit should be handled on the Android side).");
             },
             HapticFeedback: {
                 impactOccurred: function (style) {
@@ -8195,10 +8255,10 @@ div.game-card.secondary-card:hover, div.game-card.secondary-card:active {
         // Gamit na lang ang normal na browser confirm dialog imbes na Telegram-specific
         tg.showConfirm("Are you sure you want to exit Pinoy Pool Monster?", (isConfirmed) => {
             if (isConfirmed) {
-                console.log("Exiting game...");
+                dlog("Exiting game...");
                 tg.close();
             } else {
-                console.log("Exit cancelled.");
+                dlog("Exit cancelled.");
             }
         });
     }
@@ -8238,7 +8298,7 @@ window.db = null;             // Idagdag ito
             if (window.firebaseSdkReady) return;
             if (firebaseSdkLoadPromise) return firebaseSdkLoadPromise; // may kasalukuyan nang loading, sumabay na lang
             if (!navigator.onLine) {
-                console.log("Offline: hindi muna nilo-load ang Firebase SDK.");
+                dlog("Offline: hindi muna nilo-load ang Firebase SDK.");
                 return;
             }
 
@@ -8346,7 +8406,7 @@ window.db = null;             // Idagdag ito
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
                             // ✅ NAKA-LOGIN NA! Papasa na ito sa rules mo na "auth != null"
-                            console.log("✅ Firebase Auth Success! UID:", user.uid);
+                            dlog("✅ Firebase Auth Success! UID:", user.uid);
                             window.localPlayerUid = user.uid; // Gamitin ang Firebase UID
                             isAuthReady = true;
 
@@ -8361,7 +8421,7 @@ window.db = null;             // Idagdag ito
                                 lastActive: serverTimestamp()
                             }, { merge: true })
                             .then(() => {
-                                console.log("Player profile updated on Firestore!");
+                                dlog("Player profile updated on Firestore!");
                                 if (typeof loadCurrency === 'function') loadCurrency();
                             })
                             .catch(err => console.error("Error saving profile:", err));
@@ -8369,7 +8429,7 @@ window.db = null;             // Idagdag ito
                             finish();
                         } else {
                             // 🔄 KUNG HINDI PA NAKA-LOGIN, I-TRIGGER ANG ANONYMOUS LOGIN
-                            console.log("🔄 Logging in to Firebase...");
+                            dlog("🔄 Logging in to Firebase...");
                             signInAnonymously(auth).catch((error) => {
                                 console.error("❌ Firebase Login Failed:", error.code, error.message);
                                 window.lastFirebaseSdkError = "Login: " + (error.code || error.message || String(error));
@@ -8387,9 +8447,9 @@ window.db = null;             // Idagdag ito
 
                 window.firebaseSdkReady = true;
                 firebaseInitialized = true; // para gumana rin ang lumang checks na umaasa dito
-                console.log("Firebase SDK loaded.");
+                dlog("Firebase SDK loaded.");
             } catch (e) {
-                console.log("Firebase SDK load failed (walang net o may isyu):", e);
+                dlog("Firebase SDK load failed (walang net o may isyu):", e);
                 // Ipakita rin sa screen mismo ang totoong error (hindi lang sa
                 // console) — kasi walang PC/dev tools access ang tester para
                 // makita ang console log. Ito ang tutulong sa atin ma-diagnose
@@ -8587,7 +8647,6 @@ async function flushPendingShotQueue() {
                         angle: entry.angle,
                         power: entry.power,
                         pektus: entry.pektus,
-                        cueStats: entry.cueStats,
                     }),
                 });
 
@@ -9078,81 +9137,16 @@ let xpToNextLevel = 100;
 const SHOP_ITEMS = {
     cues: [
         // --- TIER 1: STARTER (Pang-masa - COINS) ---
+        // Ang Probinsyano na ngayon ang default/starter na tako.
         {
             id: 'default',
-            name: 'Kawayan (Default)',
+            name: 'Probinsyano (Default)',
             price: 0,
             currencyType: 'coins',
-            imageSrc: 'assets_images/dKur0qc.png',
-            displayWidth: 450, displayHeight: 150,
-            stats: { Power: 2, Aim: 2, Spin: 2 },
+            imageSrc: 'assets_images/cue_probinsyano.png',
+            displayWidth: 450, displayHeight: 26,
+            stats: { Power: 6, Aim: 6, Spin: 5 },
             minLevel: 1
-        },
-        {
-            id: 'makabayan',
-            name: 'Makabayan',
-            price: 1000, // Madaling mabili
-            currencyType: 'coins',
-            imageSrc: 'assets_images/LylPqwJ.png',
-            displayWidth: 450, displayHeight: 150,
-            stats: { Power: 4, Aim: 4, Spin: 3 },
-            minLevel: 3
-        },
-
-        // --- TIER 2: MID-GAME (Serious Player - COINS) ---
-        {
-            id: 'watawat_special',
-            name: 'Watawat Special',
-            price: 3000, // Need na mag-ipon
-            currencyType: 'coins',
-            imageSrc: 'assets_images/hBVzIDy.png',
-            displayWidth: 450, displayHeight: 150,
-            stats: { Power: 6, Aim: 5, Spin: 5 },
-            minLevel: 10
-        },
-        {
-            id: 'mandirigma',
-            name: 'Mandirigma',
-            price: 8000,
-            currencyType: 'coins',
-            imageSrc: 'assets_images/syLWSqJ.png',
-            displayWidth: 450, displayHeight: 150,
-            stats: { Power: 7, Aim: 6, Spin: 8 },
-            minLevel: 18
-        },
-
-        // --- TIER 3: HIGH TIER (Veterans - COINS) ---
-        {
-            id: 'datu_tribal',
-            name: 'Datu Chieftain',
-            price: 20000, // Mahal na!
-            currencyType: 'coins',
-            imageSrc: 'assets_images/MjILiWq.png',
-            displayWidth: 450, displayHeight: 150,
-            stats: { Power: 8, Aim: 8, Spin: 7 },
-            minLevel: 28
-        },
-
-        // --- TIER 4: LEGENDARY / GOD TIER (GEMS EXCLUSIVE) ---
-        {
-            id: 'perlas_legend',
-            name: 'Perlas ng Silangan',
-            price: 500, // Pinalitan: Mula 50k Coins -> 500 Gems
-            currencyType: 'gems',
-            imageSrc: 'assets_images/GrDaD6o.png',
-            displayWidth: 450, displayHeight: 150,
-            stats: { Power: 10, Aim: 9, Spin: 10 },
-            minLevel: 45
-        },
-        {
-            id: 'alien_neon',
-            name: 'Galactic Neon',
-            price: 1000, // Pinalitan: Mula 100k Coins -> 1000 Gems
-            currencyType: 'gems',
-            imageSrc: 'assets_images/VghHWbE.png',
-            displayWidth: 450, displayHeight: 150,
-            stats: { Power: 10, Aim: 10, Spin: 10 }, // Max Stats
-            minLevel: 60
         },
 
         // --- BAGONG DAGDAG: TAKO COLLECTION ---
@@ -9166,16 +9160,6 @@ const SHOP_ITEMS = {
             displayWidth: 450, displayHeight: 20,
             stats: { Power: 5, Aim: 5, Spin: 4 },
             minLevel: 2
-        },
-        {
-            id: 'probinsyano',
-            name: 'Probinsyano',
-            price: 2000,
-            currencyType: 'coins',
-            imageSrc: 'assets_images/cue_probinsyano.png',
-            displayWidth: 450, displayHeight: 26,
-            stats: { Power: 6, Aim: 6, Spin: 5 },
-            minLevel: 6
         },
         {
             id: 'maple_classic',
@@ -9624,6 +9608,12 @@ const tableSurfaceImage = new Image();
 tableSurfaceImage.crossOrigin = "Anonymous";
 tableSurfaceImage.src = 'assets_images/Gemini_Generated_Image_qtberbqtberbqtbe.png';
 
+// Logo na ilalagay sa gitna ng mesa (kapalit ng "Pinoy Pool Monster" na sulat).
+// I-upload ang PNG file na ito sa assets_images folder mo sa Sketchware
+// gamit ang EXACT filename na ito: pinoy_pool_monster_logo.png
+const tableLogoImage = new Image();
+tableLogoImage.src = 'assets_images/pinoy_pool_monster_logo.png';
+
 // --- LOAD BALL IMAGES ---
 const ballImages = {};
 for (let i = 0; i <= 15; i++) {
@@ -9649,7 +9639,7 @@ for (let i = 0; i <= 15; i++) {
 let isFirebaseInitialized = false; 
 
 window.addEventListener('online', async () => {
-    console.log("Internet Restored!");
+    dlog("Internet Restored!");
     
     // Ipakita sa player na online na ulit
     showMessage("Reconnected! Loading online features...", 3000);
@@ -9661,9 +9651,9 @@ window.addEventListener('online', async () => {
     if (typeof audioInitialized !== 'undefined' && !audioInitialized) {
         try {
             await initAudio();
-            console.log("Audio initialized after reconnect.");
+            dlog("Audio initialized after reconnect.");
         } catch (e) {
-            console.log("Audio still not loaded:", e);
+            dlog("Audio still not loaded:", e);
         }
     }
 
@@ -9675,7 +9665,7 @@ window.addEventListener('online', async () => {
         if (typeof initializeFirebase === 'function') {
             initializeFirebase();
             isFirebaseInitialized = true;
-            console.log("Firebase connected after reconnect.");
+            dlog("Firebase connected after reconnect.");
         }
     }
 
@@ -9715,7 +9705,7 @@ function reloadBrokenImages() {
             if (twa.disableVerticalSwipes) twa.disableVerticalSwipes();
             if (twa.enableClosingConfirmation) twa.enableClosingConfirmation();
         } catch (e) {
-            console.log('App theming skipped:', e);
+            dlog('App theming skipped:', e);
         }
     }
     
@@ -9731,7 +9721,7 @@ function reloadBrokenImages() {
 
     // 🔴 OFFLINE BYPASS LOGIC 🔴
     if (!navigator.onLine) {
-        console.log("Walang internet! Bypassing straight to lobby...");
+        dlog("Walang internet! Bypassing straight to lobby...");
 
         // Itago agad ang preloader gamit ang hidden class na ginawa mo sa CSS
         const preloader = document.getElementById('preloader-overlay');
@@ -10105,10 +10095,10 @@ async function endGame(winnerTextMessage, finalGameData = null) {
     if (loseSound) { loseSound.pause(); loseSound.currentTime = 0; }
 
     if (winnerTextMessage.includes("You Win")) {
-        if (winSound) { winSound.volume = 0.8; winSound.play().catch(e => console.log("Win Sound Error:", e)); }
+        if (winSound) { winSound.volume = 0.8; winSound.play().catch(e => dlog("Win Sound Error:", e)); }
         if (typeof playHaptic === 'function') playHaptic('heavy');
     } else if (winnerTextMessage.includes("You Lose") || winnerTextMessage.includes("Forfeited") || winnerTextMessage.includes("Opponent Wins")) {
-        if (loseSound) { loseSound.volume = 0.8; loseSound.play().catch(e => console.log("Lose Sound Error:", e)); }
+        if (loseSound) { loseSound.volume = 0.8; loseSound.play().catch(e => dlog("Lose Sound Error:", e)); }
         if (typeof playHaptic === 'function') playHaptic('medium');
     }
 
@@ -10749,7 +10739,7 @@ function setupEventListeners(isReturningPlayer) { // <-- NAGBAGO ITO!
 
     // Function para ituloy papuntang lobby
     async function proceedToLobby(playerName) {
-        console.log("proceedToLobby function CALLED with name:", playerName); // Debug log
+        dlog("proceedToLobby function CALLED with name:", playerName); // Debug log
         if (!playerName) {
              console.error("Proceeding to lobby without player name!");
              localPlayerName = "Player"; // Fallback name
@@ -10760,38 +10750,38 @@ function setupEventListeners(isReturningPlayer) { // <-- NAGBAGO ITO!
         // Start Audio Context
         try {
             if (!audioInitialized) {
-                console.log("Initializing audio in proceedToLobby..."); // Debug log
+                dlog("Initializing audio in proceedToLobby..."); // Debug log
                 await initAudio();
             }
             if (audioInitialized) {
-                 console.log("Playing background music..."); // Debug log
+                 dlog("Playing background music..."); // Debug log
                  playBackgroundMusic();
             } else {
-                 console.log("Audio still not initialized after initAudio call."); // Debug log
+                 dlog("Audio still not initialized after initAudio call."); // Debug log
             }
         } catch (audioError) {
             console.error("Error initializing or playing audio:", audioError);
         }
 
-        console.log("Hiding start overlay..."); // Debug log
+        dlog("Hiding start overlay..."); // Debug log
         startOverlay.classList.remove('show');
-        console.log("Showing lobby UI..."); // Debug log
+        dlog("Showing lobby UI..."); // Debug log
         showLobbyUI();
-        console.log("Replacing history state..."); // Debug log
+        dlog("Replacing history state..."); // Debug log
         history.replaceState({ modal: 'lobby' }, 'Lobby', '#lobby');
 
         // Show welcome message only once after setting name
         if (!localStorage.getItem('pinoyPoolPlayerNameWasSet')) {
-             console.log("Showing welcome message..."); // Debug log
+             dlog("Showing welcome message..."); // Debug log
              showMessage(`Welcome to Pinoy Pool, ${localPlayerName}!`, 4000);
              localStorage.setItem('pinoyPoolPlayerNameWasSet', 'true');
         }
 
-        console.log("Loading last claim time..."); // Debug log
+        dlog("Loading last claim time..."); // Debug log
         loadLastClaimTime();
-        console.log("Updating info box..."); // Debug log
+        dlog("Updating info box..."); // Debug log
         updateInfoBox();
-        console.log("proceedToLobby finished."); // Debug log
+        dlog("proceedToLobby finished."); // Debug log
 createPlayerDocument();
     }
 
@@ -11222,7 +11212,7 @@ document.getElementById('invite-game-select-close-btn').addEventListener('click'
                 spinTickSynth.volume.value = -12; // Sakto lang, hindi masakit sa tenga
 
                 audioInitialized = true;
-                console.log("Tone.js audio context started successfully.");
+                dlog("Tone.js audio context started successfully.");
             }).catch(e => {
                 console.error("Could not start Tone.js audio context:", e);
                 audioInitialized = false;
@@ -11243,7 +11233,7 @@ function playCoinSound() {
         clone.volume = 0.5; 
         
         // 4. Play!
-        clone.play().catch(e => console.log("Audio error:", e));
+        clone.play().catch(e => dlog("Audio error:", e));
         
         // 5. Itapon ang clone pagtapos tumunog para malinis
         clone.onended = function() {
@@ -11266,7 +11256,7 @@ function playCoinSound() {
              // Ensure audio is initialized, especially if this is the first interaction
              if (!audioInitialized) await initAudio();
              if (!audioInitialized || !uiSynth) {
-                console.log("Cannot play button sound: Audio not ready or synth missing.");
+                dlog("Cannot play button sound: Audio not ready or synth missing.");
                 return;
              }
              buttonSoundPlaying = true;
@@ -11595,40 +11585,48 @@ function drawBackgroundLayer() {
     });
 
     if (backgroundCanvas.width > 0) {
-        const fontSize = 60 * scale; 
-        backgroundCtx.font = `italic bold ${fontSize}px Georgia`;
-        
-        backgroundCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';  
         backgroundCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
-        backgroundCtx.textBaseline = 'middle';
-        
-        // Ang Spot (Headstring spot)
-        const spotX = backgroundCanvas.width * 0.7; 
+
+        // Ang Spot (Headstring spot) — nananatili sa dati niyang pwesto,
+        // hiwalay ito sa logo
+        const spotX = backgroundCanvas.width * 0.7;
         const spotY = backgroundCanvas.height / 2;
         const spotRadius = BALL_RADIUS * scale;
-        
-        // Drawing ng Spot (Bilog) - Ito ang magsisilbing "O"
+
+        // Drawing ng Spot (Bilog) - itinira, tinanggal na lang yung sulat
         backgroundCtx.lineWidth = 3.5 * scale;
         backgroundCtx.beginPath();
         backgroundCtx.arc(spotX, spotY, spotRadius, 0, Math.PI * 2);
-        backgroundCtx.stroke(); 
-     
-        const textPart1 = "M";      // Kaliwa ng spot
-        const textPart2 = "nster";  // Kanan ng spot
-        const spacing = 8 * scale;
-        
-        // Drawing Part 1 (M)
-        backgroundCtx.textAlign = 'right';
-        backgroundCtx.fillText(textPart1, spotX - spotRadius - spacing, spotY);
-        
-        // Drawing Part 2 (nster)
-        backgroundCtx.textAlign = 'left';
-        backgroundCtx.fillText(textPart2, spotX + spotRadius + spacing, spotY);
-        
-        // Drawing Main Title (Pinoy Pool)
-        backgroundCtx.font = `italic bold ${fontSize}px Georgia`;
-        backgroundCtx.textAlign = 'center';
-        backgroundCtx.fillText("Pinoy Pool", (backgroundCanvas.width / 2) - (60 * scale), spotY);
+        backgroundCtx.stroke();
+
+        // Logo sa gitna ng mesa (kapalit ng "Pinoy Pool Monster" text)
+        if (tableLogoImage.complete && tableLogoImage.naturalWidth !== 0) {
+            const logoSize = Math.min(backgroundCanvas.width, backgroundCanvas.height) * 0.48;
+            const logoHalf = logoSize / 2;
+            const logoY = backgroundCanvas.height / 2;
+
+            // Simula sa TUNAY na gitna ng mesa (hindi kasabay ng bilog)
+            let logoX = backgroundCanvas.width / 2;
+
+            // Kung mag-uumpugan ang logo at ang bilog, iusog ng konti
+            // pakaliwa ang logo (may gap pa) para hindi matakpan ang bilog
+            const gap = 16 * scale;
+            const circleLeftEdge = spotX - spotRadius - gap;
+            if (logoX + logoHalf > circleLeftEdge) {
+                logoX = circleLeftEdge - logoHalf;
+            }
+
+            backgroundCtx.save();
+            backgroundCtx.globalAlpha = 0.45;
+            backgroundCtx.drawImage(
+                tableLogoImage,
+                logoX - logoHalf,
+                logoY - logoHalf,
+                logoSize,
+                logoSize
+            );
+            backgroundCtx.restore();
+        }
     }
 }
 
@@ -11765,11 +11763,20 @@ function drawCueStick() {
     const cueBallCenterY = canvasScreenTop + cueBallScreenY;
 
     // 3. Position and Rotation
-    cueStickElement.style.left = `${cueBallCenterX - stickWidth}px`;
-    cueStickElement.style.top = `${cueBallCenterY - (stickHeight / 2)}px`;
-    
+    // ⚡ PERF: dating hiwalay na .style.left/.style.top (nagti-trigger ng
+    // layout reflow bawat frame) + .style.transform para sa rotate/pullback.
+    // Ngayon, isang GPU-composited transform na lang ang ginagamit (leading
+    // translate() ang humahalili sa left/top) — walang reflow, mas smooth
+    // lalo na sa mahihinang Android WebView compositing habang nag-aaim.
+    // Isang beses lang iseset ang left/top (hindi na kailangan bawat frame
+    // dahil transform na ang bahala sa aktwal na paggalaw mula rito).
+    if (!cueStickElement._positionZeroed) {
+        cueStickElement.style.left = '0px';
+        cueStickElement.style.top = '0px';
+        cueStickElement._positionZeroed = true;
+    }
     const pullbackPixels = -cueStick.pullback;
-    cueStickElement.style.transform = `rotate(${cueStick.angle}rad) translateX(${pullbackPixels - 15}px)`;
+    cueStickElement.style.transform = `translate(${cueBallCenterX - stickWidth}px, ${cueBallCenterY - (stickHeight / 2)}px) rotate(${cueStick.angle}rad) translateX(${pullbackPixels - 15}px)`;
 
     // ▼▼▼ 4. GLOW LOGIC (UPDATED) ▼▼▼
     
@@ -13072,7 +13079,6 @@ async function shoot(shotPowerValue) {
                             angle: safeAngle,
                             power: safePower,
                             pektus: shotPektusOffset,
-                            cueStats: stats,
                         }),
                     });
                     if (!apiResponse.ok) {
@@ -13175,7 +13181,6 @@ async function shoot(shotPowerValue) {
                     angle: safeAngle,
                     power: safePower,
                     pektus: shotPektusOffset,
-                    cueStats: stats,
                 });
             }
             return;
@@ -13388,7 +13393,7 @@ function applyShot(shotData) {
     // PART A: LOGIC PARA SA BOT / AI (OFFLINE)
     // =========================================================
     if (gameMode && gameMode.includes('ai')) {
-        console.log("Handling AI Rematch...");
+        dlog("Handling AI Rematch...");
 
         // 1. Gamitin ang 'selectedBetAmount' kasi naging 0 na ang currentMatchBet sa endGame
         let cost = selectedBetAmount;
@@ -13528,7 +13533,7 @@ async function updatePlayerData(uid, didWin = false) {
         // Gamitin ang setDoc na may { merge: true } para hindi mabura ang ibang fields
         await setDoc(playerDocRef, dataToSave, { merge: true });
        
-        console.log("✅ All stats synced to Firestore (Coins, Trophies, Wallet, etc.)");
+        dlog("✅ All stats synced to Firestore (Coins, Trophies, Wallet, etc.)");
         updateCurrencyDisplay(); // I-refresh ang UI
        
     } catch (error) {
@@ -13558,7 +13563,7 @@ async function startBotMatch() {
 
     // 6. MATCH TIER LOGIC — walang bayad, tier lang ang nagtatakda ng reward pag panalo.
     if (selectedBetAmount > 0) {
-        console.log("Playing vs AI, tier reward:", selectedBetAmount);
+        dlog("Playing vs AI, tier reward:", selectedBetAmount);
         
         // IMPORTANT: I-set ito para alam ng endGame() na may premyo pag nanalo ka
         currentMatchBet = selectedBetAmount; 
@@ -13596,7 +13601,7 @@ function armBotTimeout() {
     if (matchmakingTimeoutId) clearTimeout(matchmakingTimeoutId);
     matchmakingTimeoutId = setTimeout(async () => {
         if (gameId) return; // May nahanap na palang tao, wag ituloy
-        console.log("Time's up. Switching to Bot Match.");
+        dlog("Time's up. Switching to Bot Match.");
         stopMatchmakingPolling();
         if (selectedBetAmount > 0) {
             showMessage(`No human found. Playing VS AI for ${formatCurrencyShort(selectedBetAmount)} coins!`, 3000);
@@ -14246,7 +14251,7 @@ async function cancelWaitingRoom() {
         isSyncing = false;
     }
 
-        function playBackgroundMusic() { if (musicHasStarted) return; const playNextTrack = () => { currentTrackIndex = (currentTrackIndex + 1) % backgroundPlaylist.length; const nextPlayer = backgroundPlaylist[currentTrackIndex]; nextPlayer.currentTime = 0; nextPlayer.play(); }; backgroundPlaylist.forEach(player => { player.volume = 0.25; player.onended = playNextTrack; }); const initialPlayer = backgroundPlaylist[currentTrackIndex]; initialPlayer.play().catch(error => { console.log("Music play was prevented by the browser."); }); musicHasStarted = true; }
+        function playBackgroundMusic() { if (musicHasStarted) return; const playNextTrack = () => { currentTrackIndex = (currentTrackIndex + 1) % backgroundPlaylist.length; const nextPlayer = backgroundPlaylist[currentTrackIndex]; nextPlayer.currentTime = 0; nextPlayer.play(); }; backgroundPlaylist.forEach(player => { player.volume = 0.25; player.onended = playNextTrack; }); const initialPlayer = backgroundPlaylist[currentTrackIndex]; initialPlayer.play().catch(error => { dlog("Music play was prevented by the browser."); }); musicHasStarted = true; }
         /**
  * Binubuksan ang shop at ipinapakita ang mga items.
  * (ITO YUNG NAWAWALA MONG FUNCTION)
@@ -14730,7 +14735,7 @@ async function loadCurrency() {
             // Gamitin ang mas malaki sa dalawa (local vs server) para hindi mawala
             // ang mga coins na na-earn habang offline.
             playerTotalCurrency = Math.max(playerTotalCurrency, remoteBalance);
-            console.log("PPM Loaded:", playerTotalCurrency);
+            dlog("PPM Loaded:", playerTotalCurrency);
 
             // STEP 6: i-sync din ang GEMS mula sa server (dating hindi
             // nababalik dito, kaya laging localStorage-only ang value nito
@@ -15545,7 +15550,7 @@ async function createPrivateGame(inviteData, inviteId) {
                 photo: friendData.photo || null
             };
         }
-    } catch (e) { console.log("Friend data fetch error", e); }
+    } catch (e) { dlog("Friend data fetch error", e); }
 
     if (!friendPlayerInfo) {
         friendPlayerInfo = {
@@ -15859,7 +15864,7 @@ async function handleShopAction(itemId, category) {
                 await updateDoc(doc(db, "games", gameId), {
                     [`players.${localPlayerId}.equippedCueId`]: itemId
                 });
-                console.log("Cue synced to server:", itemId);
+                dlog("Cue synced to server:", itemId);
             } catch (error) {
                 console.error("Error syncing cue change:", error);
             }
@@ -16435,7 +16440,7 @@ async function createPlayerDocument() {
     if (!localPlayerUid || !db || !localPlayerName || localPlayerName === "Guest") {
         // Kung wala pa ang isa sa mga 'to, huwag munang ituloy.
         // Tatawagin ulit 'to mamaya kapag kumpleto na.
-        console.log("Waiting for UID and Name before creating player document...");
+        dlog("Waiting for UID and Name before creating player document...");
         return; 
     }
 
@@ -16447,7 +16452,7 @@ async function createPlayerDocument() {
         if (!playerDoc.exists()) {
             // --- BAGO PA LANG ANG PLAYER ---
             // Gagawa tayo ng bagong document para sa kanila
-            console.log("Creating new player document for:", localPlayerName);
+            dlog("Creating new player document for:", localPlayerName);
             await setDoc(playerDocRef, {
                 displayName: localPlayerName,
                 searchableName: localPlayerName.toLowerCase(), // ETO NA YUN!
@@ -16461,7 +16466,7 @@ async function createPlayerDocument() {
             // --- BUMALIK NA PLAYER ---
             // I-update lang natin ang pangalan at searchableName
             // para kung nag-iba man, updated pa rin.
-            console.log("Player document exists. Updating name...");
+            dlog("Player document exists. Updating name...");
             await updateDoc(playerDocRef, {
                 displayName: localPlayerName,
                 searchableName: localPlayerName.toLowerCase() // ETO NA YUN!
@@ -16915,7 +16920,7 @@ function listenToRealtimeAiming(gameId) {
         // Kung nag-start na ang laro pero nakabukas pa ang waiting room
         const waitingModal = document.getElementById('waiting-room');
         if (gameData.gameState === 'playing' && waitingModal && waitingModal.classList.contains('show')) {
-            console.log("Force closing Waiting Room...");
+            dlog("Force closing Waiting Room...");
             waitingModal.classList.remove('show'); 
             showMessage("Game Starting...", 1500);
         }
@@ -19580,6 +19585,14 @@ function attachSafeCloseListener(btnId, modalId) {
 attachSafeCloseListener('profile-close-btn', 'profile-modal');
 attachSafeCloseListener('settings-close-btn', 'settings-modal');
         
+// PERF: hinati natin ang assets sa dalawang grupo.
+//   - assetsToLoad ("critical path"): ito lang ang hinihintay ng splash
+//     screen bago pakita ang "Start" button — audio, core table/UI images,
+//     at kung anong cue/frame/felt ang TALAGANG naka-equip ngayon. Kaya
+//     mabilis na "playable" agad ang app kahit malaki ang buong shop catalog.
+//   - deferredShopAssets: lahat ng IBANG shop item (hindi pa naka-equip) —
+//     ini-load ito sa BACKGROUND habang naglalaro na ang player, hindi na
+//     kasama sa progress bar ng splash.
 const assetsToLoad = [
     // 1. Audio Files (Music & SFX)
     'assets_audio/mrbas-music-labs-roots-reggae-285790.mp3',
@@ -19593,12 +19606,29 @@ const assetsToLoad = [
     'assets_images/yCvO16j.png', // Ghost Hand
     'assets_images/FYXWKhr.png', // Default Cue Stick
 ];
-// 3. Dynamic Images (Galing sa Shop Items)
-// Kinukuha natin lahat ng imageSrc mula sa SHOP_ITEMS object mo
+const deferredShopAssets = [];
+// 3. Dynamic Images (Galing sa Shop Items) — hinahati sa "kasalukuyang
+// naka-equip" (critical, kasama sa splash) vs "natitirang catalog"
+// (deferred, background load na lang pagkatapos mag-start).
 if (typeof SHOP_ITEMS !== 'undefined') {
-    if (SHOP_ITEMS.cues) SHOP_ITEMS.cues.forEach(item => assetsToLoad.push(item.imageSrc));
-    if (SHOP_ITEMS.frames) SHOP_ITEMS.frames.forEach(item => assetsToLoad.push(item.imageSrc));
-    if (SHOP_ITEMS.felts) SHOP_ITEMS.felts.forEach(item => assetsToLoad.push(item.imageSrc));
+    const isCurrentlyEquipped = (category, id) => {
+        if (!equippedItems) return false;
+        if (category === 'cues') return equippedItems.cue === id;
+        if (category === 'frames') return equippedItems.frame === id;
+        if (category === 'felts') return equippedItems.felt === id;
+        return false;
+    };
+    ['cues', 'frames', 'felts'].forEach(category => {
+        if (!SHOP_ITEMS[category]) return;
+        SHOP_ITEMS[category].forEach(item => {
+            if (!item.imageSrc) return;
+            if (isCurrentlyEquipped(category, item.id)) {
+                assetsToLoad.push(item.imageSrc);
+            } else {
+                deferredShopAssets.push(item.imageSrc);
+            }
+        });
+    });
 }
 
 let loadedCount = 0;
@@ -19612,7 +19642,7 @@ const preloaderProgressFill = document.getElementById('preloader-progress-fill')
 function updateProgress() {
     loadedCount++;
     const percent = Math.floor((loadedCount / totalAssets) * 100);
-    loadingText.textContent = `Loading Assets... ${percent}%`;
+    if (loadingText) loadingText.textContent = `Loading Assets... ${percent}%`;
     if (preloaderProgressFill) preloaderProgressFill.style.width = `${percent}%`;
 
     if (loadedCount >= totalAssets) {
@@ -19645,7 +19675,7 @@ function preloadAudio(src) {
 }
 
 function startPreloading() {
-    console.log(`Starting preload of ${totalAssets} assets...`);
+    dlog(`Starting preload of ${totalAssets} assets...`);
     
     if (totalAssets === 0) {
         onLoadingComplete();
@@ -19662,11 +19692,40 @@ function startPreloading() {
     });
 }
 
+// PERF: hindi na kasama sa splash progress bar — tahimik na ini-load ito sa
+// background PAGKATAPOS na makapasok ang player sa laro, gamit ang
+// requestIdleCallback (kung available) para hindi ito makipag-agawan sa mas
+// mahahalagang bagay tulad ng unang render/animation frames. Kapag binuksan
+// ng player ang Shop bago pa man matapos ito, gagana pa rin nang normal ang
+// mga larawan — bahagya lang silang mas mabagal i-decode sa unang tingin.
+function startDeferredShopPreloading() {
+    if (!Array.isArray(deferredShopAssets) || deferredShopAssets.length === 0) return;
+    const loadNext = (index) => {
+        if (index >= deferredShopAssets.length) return;
+        const img = new Image();
+        img.src = deferredShopAssets[index];
+        img.onload = img.onerror = () => {
+            if (typeof requestIdleCallback === 'function') {
+                requestIdleCallback(() => loadNext(index + 1));
+            } else {
+                setTimeout(() => loadNext(index + 1), 50);
+            }
+        };
+    };
+    if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(() => loadNext(0));
+    } else {
+        setTimeout(() => loadNext(0), 800);
+    }
+}
+
 function onLoadingComplete() {
-    loadingText.textContent = "Game Ready!";
+    if (loadingText) loadingText.textContent = "Game ready";
     if (preloaderProgressFill) preloaderProgressFill.style.width = '100%';
     spinner.style.display = 'none'; // Tago spinner
-    startBtn.style.display = 'block'; // Pakita Start Button
+    startBtn.style.display = 'block'; // Pakita ang buong-screen click-catcher
+    const ctaLabel = document.getElementById('preloader-cta-label');
+    if (ctaLabel) ctaLabel.style.display = 'block'; // Pakita ang "Click Anywhere" label
 }
 
 // Listener para sa Start Button
@@ -19687,7 +19746,7 @@ startBtn.addEventListener('click', async () => {
         // Ito ang solusyon para gumana ang sounds sa mobile/Chrome
         if (typeof Tone !== 'undefined') {
             await Tone.start();
-            console.log('Audio Context Started via Preloader');
+            dlog('Audio Context Started via Preloader');
         }
 
         // 2. Initialize Background Music (Kung meron)
@@ -19699,6 +19758,10 @@ startBtn.addEventListener('click', async () => {
         // 4. Start the Actual Game Logic
         // Dito natin tatawagin ang original init() function mo
         await init();
+
+        // Ngayon lang, PAGKATAPOS makapasok ang player, saka tayo mag-uumpisa
+        // mag-load ng natitirang shop catalog sa background (di-blocking).
+        startDeferredShopPreloading();
     } catch (err) {
         console.error('Error sa Start Button handler:', err);
     } finally {
@@ -19814,7 +19877,7 @@ function handleProfileUpload(event) {
             while (compressedDataUrl.length > 1000000 && quality > 0.5) {
                 quality -= 0.05;
                 compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                console.log("Adjusting quality to fit database...", quality);
+                dlog("Adjusting quality to fit database...", quality);
             }
 
             // --- SAVE STEP ---
@@ -20233,12 +20296,12 @@ window.showRewardedAd = function (onSuccess, onFail) {
 window.isAdSpinMode = false;
 
 window.playAdGram = async function() {
-    console.log("Requesting rewarded ad for Spin Reward...");
+    dlog("Requesting rewarded ad for Spin Reward...");
 
     window.showRewardedAd(
         () => {
             // ✅ SUCCESS: Tinapos ang Ad!
-            console.log('Ad finished! Opening wheel...');
+            dlog('Ad finished! Opening wheel...');
 
             // 1. I-set ang flag na "Ad Spin" ito (para i-bypass ang cooldown)
             window.isAdSpinMode = true;
@@ -20310,7 +20373,7 @@ try {
     });
 
 } catch (err) {
-    console.log("Button setup error:", err);
+    dlog("Button setup error:", err);
 }
 
 // ============================================================
@@ -20387,7 +20450,7 @@ function restoreGameState() {
         if (typeof showLobbyUI === 'function') showLobbyUI();
     }
     
-    console.log("Game state successfully restored to:", gameState);
+    dlog("Game state successfully restored to:", gameState);
     
     // Refresh ang visuals (Dapat tawagin ang main draw function mo)
     if (typeof draw === 'function') draw(); 
