@@ -11163,61 +11163,88 @@ document.getElementById('invite-game-select-close-btn').addEventListener('click'
 
         // Updated initAudio function
         function initAudio() {
-            if (audioInitialized || typeof Tone === 'undefined') {
-                return Promise.resolve();
-            }
-            return Tone.start().then(() => {
-                // Existing Synths
-                chipCollisionSynth = new Tone.MembraneSynth({ pitchDecay: 0.008, octaves: 5, oscillator: { type: "triangle" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1, attackCurve: "exponential", }, }).toDestination();
-                chipCollisionSynth.volume.value = -4;
+    if (audioInitialized || typeof Tone === 'undefined') {
+        return Promise.resolve();
+    }
+    return Tone.start().then(() => {
+        // --- CARROM SOUND EFFECT TWEAKS ---
 
-                cueHitSynth = new Tone.PluckSynth({ attackNoise: 1, dampening: 2000, resonance: 0.5, }).toDestination();
-                cueHitSynth.volume.value = -1;
+        // 1. Banggaan ng Carrom Men (Matigas, malutong na "Clack!")
+        chipCollisionSynth = new Tone.MembraneSynth({ 
+            pitchDecay: 0.001, // Napakabilis para matunog kahoy/plastic
+            octaves: 2, 
+            oscillator: { type: "square" }, // Square wave para sa sharp na "tack"
+            envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 } 
+        }).toDestination();
+        chipCollisionSynth.volume.value = -2;
 
-                cushionSynth = new Tone.MembraneSynth({ pitchDecay: 0.01, octaves: 4, envelope: { attack: 0.001, decay: 0.2, sustain: 0 } }).toDestination();
-                cushionSynth.volume.value = -10;
+        // 2. Tumbok ng Striker (Mabigat na "Tack!")
+        // Pinalitan natin ang PluckSynth ng MembraneSynth para mas solid
+        cueHitSynth = new Tone.MembraneSynth({ 
+            pitchDecay: 0.005, 
+            octaves: 4, 
+            oscillator: { type: "sine" }, 
+            envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.05 }
+        }).toDestination();
+        cueHitSynth.volume.value = -1;
 
-                pocketSynth = new Tone.NoiseSynth({ noise: { type: 'brown' }, envelope: { attack: 0.005, decay: 0.15, sustain: 0.1 } }).toDestination();
-                pocketSynth.volume.value = -5;
+        // 3. Tama sa Gilid ng Kahoy / Pader (Dull wooden "Thwack")
+        cushionSynth = new Tone.MembraneSynth({ 
+            pitchDecay: 0.02, 
+            octaves: 3, 
+            oscillator: { type: "triangle" }, 
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } 
+        }).toDestination();
+        cushionSynth.volume.value = -5;
 
-                uiSynth = new Tone.PluckSynth({ attackNoise: 0.5, dampening: 4000, resonance: 0.8 }).toDestination();
-                uiSynth.volume.value = -4;
+        // 4. Pagkahulog sa Net / Butas (Light drop/rattle)
+        pocketSynth = new Tone.NoiseSynth({ 
+            noise: { type: 'pink' }, 
+            envelope: { attack: 0.005, decay: 0.1, sustain: 0 } 
+        }).toDestination();
+        pocketSynth.volume.value = -3;
 
-                // --- BAGONG Synths ---
-                aimingSynth = new Tone.MetalSynth({
-                    frequency: 300,
-                    envelope: { attack: 0.001, decay: 0.05, release: 0.05 },
-                    harmonicity: 3.1,
-                    modulationIndex: 16,
-                    resonance: 2000,
-                    octaves: 0.5
-                }).toDestination();
-                aimingSynth.volume.value = -25; // Mahina lang dapat
+        // UI Clicks (Magaan na click)
+        uiSynth = new Tone.PluckSynth({ 
+            attackNoise: 0.8, dampening: 4000, resonance: 0.2 
+        }).toDestination();
+        uiSynth.volume.value = -4;
 
-                powerSynth = new Tone.AMSynth({
-                    harmonicity: 1.5,
-                    envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 },
-                    modulationEnvelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 }
-                }).toDestination();
-                powerSynth.volume.value = -15; // Medyo mahina para hindi masakit sa tenga
-                // --- End BAGONG Synths ---
+        // --- BAGONG Synths ---
+        aimingSynth = new Tone.MetalSynth({
+            frequency: 300,
+            envelope: { attack: 0.001, decay: 0.05, release: 0.05 },
+            harmonicity: 3.1,
+            modulationIndex: 16,
+            resonance: 2000,
+            octaves: 0.5
+        }).toDestination();
+        aimingSynth.volume.value = -25; // Mahina lang dapat
 
-                                        // --- TUNOG NG ROLETA (Tik-tik-tik) ---
-                spinTickSynth = new Tone.MembraneSynth({
-                    pitchDecay: 0.001,
-                    octaves: 1.2,
-                    oscillator: { type: "square" },
-                    envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 }
-                }).toDestination();
-                spinTickSynth.volume.value = -12; // Sakto lang, hindi masakit sa tenga
+        powerSynth = new Tone.AMSynth({
+            harmonicity: 1.5,
+            envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 },
+            modulationEnvelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 }
+        }).toDestination();
+        powerSynth.volume.value = -15; // Medyo mahina para hindi masakit sa tenga
+        // --- End BAGONG Synths ---
 
-                audioInitialized = true;
-                dlog("Tone.js audio context started successfully.");
-            }).catch(e => {
-                console.error("Could not start Tone.js audio context:", e);
-                audioInitialized = false;
-            });
-        }
+        // --- TUNOG NG ROLETA (Tik-tik-tik) ---
+        spinTickSynth = new Tone.MembraneSynth({
+            pitchDecay: 0.001,
+            octaves: 1.2,
+            oscillator: { type: "square" },
+            envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 }
+        }).toDestination();
+        spinTickSynth.volume.value = -12; // Sakto lang, hindi masakit sa tenga
+
+        audioInitialized = true;
+        console.log("Tone.js audio context started successfully with Carrom sounds.");
+    }).catch(e => {
+        console.error("Could not start Tone.js audio context:", e);
+        audioInitialized = false;
+    });
+}
 
 // Ito ang taga-play ng sound
 function playCoinSound() {
